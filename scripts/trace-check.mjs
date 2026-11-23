@@ -94,11 +94,15 @@ for (const file of reviewFiles) {
 }
 
 // 4. Reglas de cobertura -----------------------------------------------------
+// Una spec está "en implementación" cuando al menos un test cita alguno de sus IDs.
+// Desde ese momento se exige cobertura completa de esa spec (las historias se implementan una a una).
+const specsInImplementation = new Set([...ids.values()].filter((e) => e.tests.length > 0).map((e) => e.spec));
+for (const s of specs) s.inImplementation = specsInImplementation.has(s.specId);
 for (const [id, e] of ids) {
   if (e.tests.length > 0) continue;
   const spec = specs.find((s) => s.specId === e.spec);
   const msg = `${id} (${e.spec}) no tiene ningún test que lo cite en su título.`;
-  if (spec?.approved && frontendExists && testFiles.length > 0) errors.push(msg);
+  if (spec?.approved && frontendExists && spec.inImplementation) errors.push(msg);
   else warnings.push(msg);
 }
 
@@ -113,9 +117,9 @@ if (WRITE) {
     '> Generado por `node scripts/trace-check.mjs --write`. No editar a mano.',
     '',
     '## Specs',
-    '| Spec | Estado | IDs definidos |',
-    '| :--- | :--- | :--- |',
-    ...specs.map((s) => `| [${s.specId}](${s.file.replace('docs/', './')}) | ${s.status} | ${s.count} |`),
+    '| Spec | Estado | IDs definidos | En implementación |',
+    '| :--- | :--- | :--- | :--- |',
+    ...specs.map((s) => `| [${s.specId}](${s.file.replace('docs/', './')}) | ${s.status} | ${s.count} | ${s.inImplementation ? 'Sí' : 'No'} |`),
     '',
     '## Reglas y criterios → tests → hallazgos',
     '| ID | Tipo | Spec | Tests | Hallazgos |',

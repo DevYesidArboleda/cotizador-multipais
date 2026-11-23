@@ -14,7 +14,7 @@ La trazabilidad declarada a mano se desactualiza. Esta skill la convierte en un 
 3. Lee `docs/reviews/REVIEW-*.md` y extrae hallazgos `F-xx.n` con su estado.
 4. Verifica que cada spec referencie al menos un ADR existente en `docs/adrs/`.
 5. Reglas de fallo (exit 1):
-   - Spec en estado `Aprobado` con `R-`/`AC-` sin test (solo si `frontend/` ya existe: antes de implementar es advertencia).
+   - Spec en estado `Aprobado` **y en implementación** (algún test ya cita uno de sus IDs) con `R-`/`AC-` sin test. Antes de que la historia entre en implementación es advertencia, porque las historias se implementan una a una (ajuste de Fase 5).
    - Hallazgo `BLOCKER`/`MAJOR` en estado distinto de `RESUELTO` o `ACEPTADO`.
    - Spec que referencia un ADR inexistente.
 6. `--write` regenera `docs/TRACEABILITY.md` (tabla ID → spec → tests → hallazgos).
