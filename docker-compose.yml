@@ -1,0 +1,51 @@
+services:
+  strapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: insurtech-strapi
+    restart: unless-stopped
+    ports:
+      - "1337:1337"
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_CLIENT: sqlite
+      DATABASE_FILENAME: /opt/app/.tmp/data.db
+      APP_KEYS: ${STRAPI_APP_KEYS:-devKeyOne1234567890,devKeyTwo1234567890}
+      API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT:-devApiTokenSalt1234567890}
+      ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-devAdminJwtSecret1234567890}
+      TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT:-devTransferSalt1234567890}
+      JWT_SECRET: ${STRAPI_JWT_SECRET:-devJwtSecret1234567890}
+    volumes:
+      - strapi_data:/opt/app/.tmp
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:1337/_health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 25s
+    networks:
+      - app-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: insurtech-frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      strapi:
+        condition: service_healthy
+    networks:
+      - app-net
+
+volumes:
+  strapi_data:
+
+networks:
+  app-net:
+    driver: bridge

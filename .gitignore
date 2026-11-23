@@ -1,0 +1,22 @@
+# Dependencias
+node_modules/
+dist/
+.angular/
+
+# Variables sensibles
+.env
+.env.local
+backend/.env
+frontend/.env
+
+# Bases de datos locales y temporales de Strapi
+backend/.tmp/
+backend/.cache/
+backend/build/
+
+# Reportes de pruebas y sistema
+playwright-report/
+test-results/
+coverage/
+.DS_Store
+Thumbs.db
