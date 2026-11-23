@@ -1,0 +1,16 @@
+# gitleaks: reglas por defecto + excepciones justificadas (ADR-002).
+# Los únicos "secretos" permitidos son valores FICTICIOS de desarrollo local, documentados como tales.
+title = "cotizador-multipais"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Valores ficticios de desarrollo (no se usan en la nube; allí vienen de Render/GitHub Secrets)"
+paths = [
+  '''^docker-compose\.yml$''',
+  '''^\.env\.example$''',
+]
+regexes = [
+  '''(?i)(dev|fictitious)[A-Za-z]*\d{6,}''',
+]
