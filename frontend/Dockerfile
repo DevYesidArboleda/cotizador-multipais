@@ -1,19 +1,19 @@
-# Etapa 1: Build de Angular 21+
-FROM node:22-alpine AS builder
+# syntax=docker/dockerfile:1.7
+# Angular 21+ → Nginx no-root. Un solo build sirve CO y CL (ADR-001).
+# Ningún secreto entra a esta imagen: el upstream de Strapi se inyecta en runtime (ADR-003).
+
+FROM node:22-alpine AS build
 WORKDIR /app
-
 COPY package.json package-lock.json* ./
-RUN npm ci || npm install
-
+RUN npm ci --no-audit --no-fund
 COPY . .
-RUN npm run build
+RUN npm run build -- --configuration production
 
-# Etapa 2: Servidor Nginx ligero (sin tokens ni herramientas de build)
-FROM nginx:1.27-alpine
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+ARG APP_NAME=frontend
+ENV PORT=8080 \
+    STRAPI_UPSTREAM=http://strapi:1337
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY nginx/15-resolver.envsh /docker-entrypoint.d/15-resolver.envsh
+COPY --from=build /app/dist/${APP_NAME}/browser /usr/share/nginx/html
+EXPOSE 8080

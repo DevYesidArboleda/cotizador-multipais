@@ -20,3 +20,9 @@ test-results/
 coverage/
 .DS_Store
 Thumbs.db
+
+# IDE / Claude local
+.vscode/*
+!.vscode/extensions.json
+.claude/settings.local.json
+*.local.md

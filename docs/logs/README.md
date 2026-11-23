@@ -1,21 +1,13 @@
 # Evidencia de Sesiones con Agentes (Sin Editar)
 
-La prueba técnica requiere entregar **logs o exportaciones sin editar** de las sesiones con los agentes de IA.
+## Cómo se capturan en este proyecto
+| Fuente | Cómo se guarda | Archivos |
+| :--- | :--- | :--- |
+| **Orquestador** (sesión principal con el humano) | Mensajes del humano y respuestas del orquestador copiados literalmente al cerrar cada fase; además el humano exporta la conversación completa desde la app (Compartir/Exportar) y la adjunta aquí. | `00-orquestador-*.md`, `orquestador-export.*` |
+| **Subagentes** | El prompt de despacho y el informe final del subagente se guardan **verbatim** (sin editar) por el orquestador apenas el subagente termina. | `NN-<agente>-<fase>.md` |
+| **Claude Code CLI** (si el flujo se reproduce en terminal) | `/export docs/logs/<nombre>.txt` o copia de `~/.claude/projects/<proyecto>/*.jsonl` | `cli-*.txt` / `*.jsonl` |
 
-## Cómo exportar sesiones desde Claude Code
-1. Dentro de una sesión activa de Claude Code, ejecuta el comando:
-   ```text
-   /export docs/logs/01-spec-analyst.txt
-   ```
-2. Alternativamente, puedes copiar los archivos de transcripción crudos (`.jsonl`) que Claude Code guarda automáticamente en:
-   - macOS / Linux: `~/.claude/projects/<nombre-del-proyecto>/*.jsonl`
-   - Windows: `%USERPROFILE%\.claude\projects\<nombre-del-proyecto>\*.jsonl`
+## Convención de nombres
+`NN-<agente>-<fase>.md` — p. ej. `02-spec-analyst-specs-v2.md`, `06-qa-reviewer-review-us01.md`.
 
-## Convención sugerida de nombres
-- `01-specs-y-hitl1.txt`
-- `02-arquitectura-y-ux.txt`
-- `03-strapi-y-docker.txt`
-- `04-angular-us01-us02-us03.txt`
-- `05-qa-review-y-correcciones.txt`
-
-> **Regla de seguridad:** Revisa antes de subir a Git que no hayas pegado accidentalmente contraseñas, API keys personales ni datos personales reales dentro del chat.
+> **Regla de seguridad:** antes de commitear, revisar que no haya contraseñas, tokens ni datos personales reales.

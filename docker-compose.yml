@@ -1,47 +1,63 @@
+# Arranque en un solo comando:  docker compose up --build
+# Mismas imágenes que se publican en GHCR y corren en Render (ADR-003); solo cambian variables de entorno.
+name: cotizador-multipais
+
+x-strapi-secrets: &strapi-secrets
+  # Valores FICTICIOS de desarrollo. En la nube se inyectan desde Render/GitHub Secrets.
+  APP_KEYS: ${STRAPI_APP_KEYS:-devKeyOne1234567890,devKeyTwo1234567890}
+  API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT:-devApiTokenSalt1234567890}
+  ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-devAdminJwtSecret1234567890}
+  TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT:-devTransferSalt1234567890}
+  JWT_SECRET: ${STRAPI_JWT_SECRET:-devJwtSecret1234567890}
+  ENCRYPTION_KEY: ${STRAPI_ENCRYPTION_KEY:-devEncryptionKey1234567890}
+
 services:
   strapi:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-    container_name: insurtech-strapi
+    image: cotizador-multipais-backend:local
     restart: unless-stopped
     ports:
-      - "1337:1337"
+      - "1337:1337"   # Solo para acceder al panel admin en local (http://localhost:1337/admin)
     environment:
-      NODE_ENV: development
+      <<: *strapi-secrets
+      NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 1337
-      DATABASE_CLIENT: sqlite
+      PUBLIC_URL: http://localhost:1337
+      DATABASE_CLIENT: ${DATABASE_CLIENT:-sqlite}
       DATABASE_FILENAME: /opt/app/.tmp/data.db
-      APP_KEYS: ${STRAPI_APP_KEYS:-devKeyOne1234567890,devKeyTwo1234567890}
-      API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT:-devApiTokenSalt1234567890}
-      ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-devAdminJwtSecret1234567890}
-      TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT:-devTransferSalt1234567890}
-      JWT_SECRET: ${STRAPI_JWT_SECRET:-devJwtSecret1234567890}
+      DATABASE_URL: ${DATABASE_URL:-}
+      SEED_ON_BOOT: ${SEED_ON_BOOT:-true}
     volumes:
       - strapi_data:/opt/app/.tmp
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:1337/_health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:1337/_health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 12
-      start_period: 25s
-    networks:
-      - app-net
+      retries: 18
+      start_period: 40s
+    networks: [app-net]
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    container_name: insurtech-frontend
+    image: cotizador-multipais-frontend:local
     restart: unless-stopped
     ports:
-      - "4200:80"
+      - "4200:8080"
+    environment:
+      # El frontend NO recibe secretos: solo la dirección interna de Strapi para el proxy /api.
+      STRAPI_UPSTREAM: http://strapi:1337
     depends_on:
       strapi:
         condition: service_healthy
-    networks:
-      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    networks: [app-net]
 
 volumes:
   strapi_data:

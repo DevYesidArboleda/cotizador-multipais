@@ -1,64 +1,45 @@
-# Guía de Prompts para Operar el Equipo en Claude Code
+# Guía de Prompts para Operar el Equipo
 
-Abre una terminal en la raíz del repositorio y ejecuta `claude`. Usa estos prompts en orden respetando los checkpoints humanos (**HITL**).
+El Orquestador (sesión principal) despacha cada subagente con un prompt que **siempre** incluye: (1) la ruta de su definición en `.claude/agents/`, (2) sus entradas exactas, (3) el entregable y (4) el bloque de Handoff de `CLAUDE.md` §6. Al terminar, el informe se guarda verbatim en `docs/logs/`.
 
-> **Importante:** Al terminar cada fase, ejecuta `/export` en Claude Code (o copia el archivo `.jsonl` sin editar desde `~/.claude/projects/`) y guárdalo en `docs/logs/` (ej. `docs/logs/01-specs-session.txt`).
-
----
-
-## Fase 1 — Validación y refinamiento de Specs (Analista)
-```text
-Usa el subagente @spec-analyst con la skill spec-gap-checklist.
-Revisa docs/specs/SPEC-US-01.md, SPEC-US-02.md y SPEC-US-03.md frente al enunciado de la prueba técnica.
-Identifica si falta algún caso borde de validación para Colombia o Chile, accesibilidad o estado de error. No escribas código aún.
-```
-**Checkpoint HITL 1:** Lee las specs, haz al menos 1–2 correcciones reales según tu criterio de negocio y aprueba.
+En **Claude Code CLI** los mismos prompts funcionan anteponiendo `@<agente>` (las definiciones de `.claude/agents/` se registran como subagentes).
 
 ---
 
-## Fase 2 — Arquitectura, Contratos y Diseño UI/UX
+## Fase 2 — Specs v2 (`@spec-analyst`)
 ```text
-1) Usa @architect con software-architecture-madr para revisar docs/adrs/ADR-001 y ADR-002 y generar los contratos TypeScript compartidos en docs/contracts/strapi-contracts.ts.
-2) Usa @ui-ux-designer con ui-ux-accessibility-system para generar docs/specs/UI-UX-GUIDELINES.md cubriendo los 3 pasos del wizard, mobile/desktop y navegación 100% por teclado.
+Actúa como el subagente definido en .claude/agents/spec-analyst.md y aplica .claude/skills/spec-gap-checklist/SKILL.md.
+Entradas: docs/user-stories/US-0{1,2,3}.md, CLAUDE.md, docs/adrs/*, y las specs v1 en docs/specs/.
+Reescribe docs/specs/SPEC-US-01.md, -02.md y -03.md al formato v2 (GAP/R/AC con IDs, matriz de verificación, Changelog vs v1).
+Marca como "DECISIÓN HUMANA REQUERIDA" los GAP que dependan de criterio de negocio. No escribas código. Termina con el Handoff.
 ```
-**Checkpoint HITL 2:** Aprueba contratos y lineamientos visuales antes de iniciar la implementación.
+**HITL-1:** el humano resuelve los GAP, corrige y registra `docs/hitl/HITL-1-specs.md`.
 
----
-
-## Fase 3 — Infraestructura Docker + Backend Strapi 5
+## Fase 3 — Arquitectura y UX
 ```text
-Usa @cms-engineer con strapi-5-docker-seed para inicializar Strapi 5 en backend/ con:
-- Content-Types: Country, FormField (con componente repetible para options) e InsurancePlan.
-- Bootstrap idempotente que cree datos semilla ficticios para Colombia (co) y Chile (cl), incluyendo un plan recomendado y un plan inactivo para pruebas.
-- Permisos del rol Public limitados estrictamente a find sobre las 3 colecciones.
-Luego usa @devops-engineer con docker-single-command-ops para verificar backend/Dockerfile y docker-compose.yml.
+@architect: revisa ADR-001..003 contra las specs aprobadas, actualízalos (≥3 alternativas reales, fuentes) y genera docs/contracts/strapi-contracts.ts. Handoff.
+@ui-ux-designer: genera docs/specs/UI-UX-GUIDELINES.md (tokens con contraste, layout por paso, estados, foco, matriz WCAG 2.2 AA). Handoff.
 ```
-**Verificación humana:** Corre `docker compose up --build strapi` y prueba `GET http://localhost:1337/api/form-fields?filters[country][code][$eq]=co&populate=options&sort=order:asc`.
+**HITL-2:** `docs/hitl/HITL-2-arquitectura.md`.
 
----
-
-## Fase 4 — Frontend Angular 21+ (por Historia de Usuario)
-Ejecuta historia por historia para mantener trazabilidad limpia:
-
+## Fase 4 — Backend y plataforma
 ```text
-Usa @frontend-engineer con angular-21-dynamic-forms y docs/specs/UI-UX-GUIDELINES.md.
-Inicializa Angular 21+ (standalone, signals, @if/@for, sin NgModules) en frontend/ e implementa SPEC-US-01 con sus pruebas unitarias para DynamicFormBuilderService y validadores (legal_age, vehicle_year_range, cl_rut).
+@cms-engineer: implementa backend/ según strapi-5-docker-seed, contratos y ADRs; arranca Strapi y pega la respuesta real de los 3 endpoints y del POST anónimo. Handoff.
+@devops-engineer: ajusta Docker/CI/CD al backend y frontend reales; valida con docker compose config. Handoff.
 ```
+**HITL-2b:** `docker compose down -v && docker compose up --build` en la máquina del humano → `docs/hitl/HITL-2b-plataforma.md`.
 
+## Fase 5 — Frontend (una historia por despacho)
 ```text
-Usa @frontend-engineer para implementar SPEC-US-02 (listado de planes por país, moneda COP/CLP, PricingService con la regla documentada, plan recomendado, selección única, estado vacío) y sus pruebas unitarias.
+@frontend-engineer: implementa SPEC-US-01 (aprobada) con angular-21-dynamic-forms y UI-UX-GUIDELINES. Tests con IDs en el título. Ejecuta lint, test y build y pega el resultado. Commit con Refs. Handoff.
 ```
+(Repetir para SPEC-US-02 y SPEC-US-03; en US-03 añadir el E2E Playwright del flujo completo.)
 
+## Fase 6 — Review independiente
 ```text
-Usa @frontend-engineer para implementar SPEC-US-03 (resumen con documento enmascarado, T&C desde Strapi por país, bloqueo doble envío, pago simulado exitoso y rechazado sin perder datos), pruebas unitarias y una prueba E2E completa con Playwright para Colombia o Chile.
+@qa-reviewer: audita en solo lectura contra las specs aprobadas, ADRs y CLAUDE.md; ejecuta tests, build, E2E y trace-check; escribe REVIEW-US-01..03 y REVIEW-PLATFORM; regenera TRACEABILITY.md. Handoff.
 ```
+**HITL-3:** el humano prioriza hallazgos → `@frontend-engineer`/`@cms-engineer` corrigen → `@qa-reviewer` re-audita y cierra cada `F-` con commit + test.
 
----
-
-## Fase 5 — Code Review Independiente y Cierre
-```text
-Usa @qa-reviewer con qa-security-code-review.
-Audita backend/ y frontend/ contra SPEC-US-01, SPEC-US-02, SPEC-US-03, ADR-001, ADR-002 y CLAUDE.md.
-Ejecuta los tests unitarios y E2E, verifica ausencia de tokens de escritura y accesibilidad por teclado, y escribe tus hallazgos en docs/reviews/REVIEW-US-01.md, REVIEW-US-02.md y REVIEW-US-03.md sin editar código fuente.
-```
-**Checkpoint HITL 3:** Pide a `@frontend-engineer` o `@cms-engineer` corregir todos los hallazgos `BLOCKER` y `MAJOR`, vuelve a correr `@qa-reviewer` para marcar cada hallazgo como `RESUELTO` con trazabilidad al commit/test.
+## Fase 7-8 — CI/CD
+Push a `main` → CI → CD. **HITL-4:** smoke post-deploy (`docs/DEPLOY.md` §6).

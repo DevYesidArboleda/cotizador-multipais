@@ -1,0 +1,46 @@
+# Render Blueprint (ADR-003). Servicios image-backed: Render NO compila; despliega las imágenes que publica el CD en GHCR.
+# Pasos únicos en el dashboard: crear el Blueprint, pegar DATABASE_URL (Neon) y STRAPI_UPSTREAM, y copiar los deploy hooks a GitHub Secrets.
+services:
+  - type: web
+    name: cotizador-strapi
+    runtime: image
+    plan: free
+    image:
+      url: ghcr.io/devyesidarboleda/cotizador-multipais-backend:latest
+    healthCheckPath: /_health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_CLIENT
+        value: postgres
+      - key: DATABASE_URL
+        sync: false          # Connection string de Neon (secreto, se pega en el dashboard)
+      - key: DATABASE_SSL
+        value: "true"
+      - key: SEED_ON_BOOT
+        value: "true"
+      - key: PUBLIC_URL
+        sync: false          # p. ej. https://cotizador-strapi.onrender.com
+      - key: APP_KEYS
+        generateValue: true
+      - key: API_TOKEN_SALT
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+      - key: TRANSFER_TOKEN_SALT
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+
+  - type: web
+    name: cotizador-frontend
+    runtime: image
+    plan: free
+    image:
+      url: ghcr.io/devyesidarboleda/cotizador-multipais-frontend:latest
+    healthCheckPath: /healthz
+    envVars:
+      - key: STRAPI_UPSTREAM
+        sync: false          # https://cotizador-strapi.onrender.com (sin barra final)

@@ -1,0 +1,7 @@
+# Las rutas de gobierno requieren revisión humana (HITL) antes del merge.
+/CLAUDE.md                  @DevYesidArboleda
+/.claude/                   @DevYesidArboleda
+/docs/specs/                @DevYesidArboleda
+/docs/adrs/                 @DevYesidArboleda
+/docs/hitl/                 @DevYesidArboleda
+/.github/                   @DevYesidArboleda

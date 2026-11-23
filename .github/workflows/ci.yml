@@ -1,0 +1,144 @@
+# CI — puertas de calidad que bloquean el merge (ADR-003, skill docker-single-command-ops §4)
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    name: Gobierno (trazabilidad + secretos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Lint de workflows (actionlint)
+        uses: raven-actions/actionlint@v2
+      - name: Trazabilidad US → SPEC → ADR → tests → review
+        run: node scripts/trace-check.mjs
+      - name: Escaneo de secretos (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Ningún token de Strapi en el frontend
+        run: |
+          if [ -d frontend/src ] && grep -rniE "bearer |api[_-]?token|STRAPI_[A-Z_]*(TOKEN|SECRET)|localhost:1337" frontend/src --include=*.ts --include=*.html; then
+            echo "::error::Se encontró un posible token o URL directa de Strapi en frontend/src"; exit 1
+          fi
+
+  frontend:
+    name: Frontend (lint, unit, build)
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('frontend/package.json') != '' }}
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test -- --watch=false
+      - run: npm run build -- --configuration production
+      - name: Bundle sin secretos
+        run: |
+          if grep -rniE "bearer |api[_-]?token|localhost:1337" dist/; then
+            echo "::error::El bundle contiene un posible secreto o URL directa de Strapi"; exit 1
+          fi
+
+  backend:
+    name: Backend (build Strapi)
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('backend/package.json') != '' }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: npm audit (informativo)
+        run: npm audit --omit=dev --audit-level=critical || true
+
+  e2e:
+    name: E2E (docker compose + Playwright)
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    if: ${{ hashFiles('frontend/e2e/**') != '' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Levantar el stack con un solo comando
+        run: docker compose up -d --build --wait --wait-timeout 420
+      - name: Smoke de seguridad de la API pública
+        run: |
+          curl -fsS "http://localhost:4200/api/countries?filters%5Bcode%5D%5B%24eq%5D=co" | grep -q '"code":"co"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:1337/api/form-fields -H 'Content-Type: application/json' -d '{"data":{}}')" -ge 400
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+        env:
+          E2E_BASE_URL: http://localhost:4200
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 14
+      - name: Logs del stack si falla
+        if: failure()
+        run: docker compose logs --no-color > compose.log; tail -200 compose.log
+
+  images:
+    name: Imágenes (build + escaneo Trivy)
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    strategy:
+      matrix:
+        service: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          load: true
+          tags: cotizador-${{ matrix.service }}:ci
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+      - name: Trivy (HIGH/CRITICAL, informativo)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cotizador-${{ matrix.service }}:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '0'
