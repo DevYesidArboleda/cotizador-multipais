@@ -2,7 +2,7 @@
 # Angular 21+ → Nginx no-root. Un solo build sirve CO y CL (ADR-001).
 # Ningún secreto entra a esta imagen: el upstream de Strapi se inyecta en runtime (ADR-003).
 
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund
