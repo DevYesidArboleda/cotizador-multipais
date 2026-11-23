@@ -1,6 +1,6 @@
 # UI-UX-GUIDELINES — Sistema visual, layout, estados, foco y accesibilidad del Cotizador
 
-- **Versión:** v1 · **Estado:** Borrador (pendiente de revisión en **HITL-2**, junto con los ADRs)
+- **Versión:** v1 · **Estado:** Aprobado (HITL-2, 2026-11-23; P1-P4 aprobados — `docs/hitl/HITL-2-arquitectura.md`)
 - **Autor:** `@ui-ux-designer` · **Fase:** 3
 - **Specs de origen (aprobadas en HITL-1, v3):** `docs/specs/SPEC-US-01.md`, `SPEC-US-02.md`, `SPEC-US-03.md`
 - **Contexto global:** `CLAUDE.md` §3 (reglas 2, 3, 6, 7), §4 (rutas únicas), §7 (estados como unión discriminada).

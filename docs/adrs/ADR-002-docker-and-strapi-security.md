@@ -1,6 +1,6 @@
 # ADR-002: Entorno Docker de un solo comando y modelo de seguridad de Strapi
 
-- **Estado:** Propuesto (pendiente HITL-2)
+- **Estado:** Aceptado (HITL-2, 2026-11-23 — `docs/hitl/HITL-2-arquitectura.md`)
 - **Fecha:** 2026-11-23 (revisión v2 de `@architect`, Fase 3; alineada con `docker-compose.yml` y `frontend/nginx/default.conf.template` ya implementados)
 - **Decisores:** `@architect` (propuesta) → humano (HITL-2). Implementación: `@devops-engineer` (compose, Nginx) y `@cms-engineer` (permisos, middlewares, seed).
 - **Trazabilidad:**

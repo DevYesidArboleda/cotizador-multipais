@@ -1,6 +1,6 @@
 # ADR-001: Estrategia multi-país (CO/CL) con un solo build, modelo de contenido Strapi 5 y acoplamiento semántico
 
-- **Estado:** Propuesto (pendiente HITL-2)
+- **Estado:** Aceptado (HITL-2, 2026-11-23 — `docs/hitl/HITL-2-arquitectura.md`)
 - **Fecha:** 2026-11-23 (revisión v2 de `@architect`, Fase 3; reemplaza el borrador del Orquestador)
 - **Decisores:** `@architect` (propuesta) → humano (HITL-2). Decisiones heredadas de HITL-1 marcadas como **[HITL-1]** (no se reabren aquí).
 - **Trazabilidad:**

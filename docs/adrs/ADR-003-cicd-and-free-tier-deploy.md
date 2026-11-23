@@ -1,6 +1,6 @@
 # ADR-003: CI/CD con GitHub Actions y despliegue en capa gratuita (Render + Neon)
 
-- **Estado:** Propuesto (pendiente HITL-2)
+- **Estado:** Aceptado (HITL-2, 2026-11-23 — `docs/hitl/HITL-2-arquitectura.md`)
 - **Fecha:** 2026-11-23 (revisión v2 de `@architect`, Fase 3)
 - **Decisores:** Orquestador (borrador) → `@architect` (revisión) → humano (HITL-2). Implementación: `@devops-engineer`.
 - **Trazabilidad:**

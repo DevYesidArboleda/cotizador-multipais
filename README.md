@@ -63,4 +63,5 @@ node scripts/trace-check.mjs                  # Trazabilidad US → SPEC → ADR
 | Logs sin editar | [`docs/logs/`](./docs/logs/) |
 
 ## Requisitos no cumplidos o adaptados
-- *(Se completa al cierre.)* Adaptación conocida: la plataforma gratuita suspende los servicios tras 15 min sin tráfico (primer acceso ~1 min). Ver `ADR-003`.
+- *(Se completa al cierre.)*
+- **Arranque en frío en la demo pública (aceptado en HITL-2):** Render Free suspende los servicios tras 15 min sin tráfico y el primer acceso tarda ~1 min. Como la spec fija un timeout de 10 s para cargar la configuración, ese primer visitante verá el estado de error con **"Reintentar"**; al reintentar, la app carga normalmente. En local (`docker compose up`) no ocurre. Ver `ADR-003` (K1).
