@@ -23,7 +23,7 @@ jobs:
       backend: ${{ steps.d.outputs.backend }}
       e2e: ${{ steps.d.outputs.e2e }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: d
         # Mientras el flujo SDD avanza, frontend/ y backend/ aún pueden no existir: sus jobs se omiten sin fallar.
         run: |
@@ -38,7 +38,7 @@ jobs:
     name: Gobierno (trazabilidad + secretos)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v4
@@ -67,7 +67,7 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -92,7 +92,7 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -110,7 +110,7 @@ jobs:
     if: needs.detect.outputs.e2e == 'true'
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Levantar el stack con un solo comando
         run: docker compose up -d --build --wait --wait-timeout 420
       - name: Smoke de seguridad de la API pública
@@ -150,7 +150,7 @@ jobs:
       matrix:
         service: [frontend, backend]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
