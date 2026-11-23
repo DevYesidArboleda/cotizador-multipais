@@ -10,6 +10,10 @@ x-strapi-secrets: &strapi-secrets
   TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT:-devTransferSalt1234567890}
   JWT_SECRET: ${STRAPI_JWT_SECRET:-devJwtSecret1234567890}
   ENCRYPTION_KEY: ${STRAPI_ENCRYPTION_KEY:-devEncryptionKey1234567890}
+  # Super-admin inicial creado por el bootstrap de Strapi (ADR-002 §4.2). FICTICIO en local (dominio example.com);
+  # en la nube vienen de Render Secrets y nunca del repositorio.
+  STRAPI_ADMIN_EMAIL: ${STRAPI_ADMIN_EMAIL:-admin@example.com}
+  STRAPI_ADMIN_PASSWORD: ${STRAPI_ADMIN_PASSWORD:-DevAdminPass1234567890}
 
 services:
   strapi:
@@ -24,10 +28,12 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 1337
-      PUBLIC_URL: http://localhost:1337
+      # PUBLIC_URL fija el origen del admin y el unico origen permitido por strapi::cors (ADR-002 §4.2).
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:1337}
       DATABASE_CLIENT: ${DATABASE_CLIENT:-sqlite}
       DATABASE_FILENAME: /opt/app/.tmp/data.db
       DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_SSL: ${DATABASE_SSL:-false}
       SEED_ON_BOOT: ${SEED_ON_BOOT:-true}
     volumes:
       - strapi_data:/opt/app/.tmp

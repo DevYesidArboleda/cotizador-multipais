@@ -190,3 +190,7 @@ Los errores se lanzan con `errors.ValidationError` de `@strapi/utils` para que e
 - Strapi 5, parámetro `status` y retiro de `publicationState`: https://docs.strapi.io/cms/api/rest/status · https://docs.strapi.io/cms/migration/v4-to-v5/breaking-changes/publication-state-removed.md
 - Strapi 5, lifecycle hooks con el Document Service y middlewares: https://docs.strapi.io/cms/migration/v4-to-v5/breaking-changes/lifecycle-hooks-document-service · https://docs.strapi.io/cms/api/document-service/middlewares.md · https://strapi.io/blog/what-are-document-service-middleware-and-what-happened-to-lifecycle-hooks-1
 - Draft & Publish: https://docs.strapi.io/cms/features/draft-and-publish
+
+
+## Addendum de implementación (2026-11-23, Fase 4 — log 07)
+- `country.locale` se persiste como `localeCode` porque `locale` es reservado en Strapi 5.63 (oculto en respuestas, `fields[]=locale` → 400). El controller expone `locale`, así que `StrapiCountryDto` y el comportamiento observable no cambian. Detectado por `@cms-engineer`; no altera la decisión de este ADR.

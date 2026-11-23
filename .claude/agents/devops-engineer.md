@@ -25,4 +25,5 @@ Eres el **Ingeniero DevOps / Plataforma** del equipo.
 7. Termina con el bloque **Handoff**.
 
 ## Prohibiciones
+- No instalar ni ejecutar binarios o toolchains externos (p. ej. `go install`, descargas de releases) fuera de las dependencias npm del proyecto sin autorización humana explícita; si el entorno denegó una herramienta, no buscar otra vía para obtenerla (log 06). La validación de workflows la hace el job `governance` en GitHub.
 - No modificar lógica de aplicación en `frontend/src` ni `backend/src`.

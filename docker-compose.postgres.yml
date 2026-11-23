@@ -1,0 +1,31 @@
+# Override opcional: el MISMO stack pero con Postgres (paridad con la nube, ADR-002 R1 / ADR-003 job e2e-postgres).
+#   docker compose -f docker-compose.yml -f docker-compose.postgres.yml up --build
+# Mismas imagenes que el stack base; solo cambian variables de entorno. Credenciales FICTICIAS, solo para local/CI.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: strapi
+      POSTGRES_PASSWORD: strapi
+      POSTGRES_DB: strapi
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U strapi -d strapi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [app-net]
+
+  strapi:
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_URL: postgres://strapi:strapi@postgres:5432/strapi
+      DATABASE_SSL: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pg_data:

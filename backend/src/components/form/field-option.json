@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_form_field_options",
+  "info": { "displayName": "Opción de campo", "description": "Opción de un select. El ajuste de precio solo aplica al campo con rol city." },
+  "options": {},
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "value": { "type": "string", "required": true },
+    "validationPattern": { "type": "string", "description": "Regex del campo dependiente cuando esta opción está elegida (p. ej. número de documento según CC/CE)." },
+    "validationMessage": { "type": "string" },
+    "priceAdjustmentPct": { "type": "integer", "min": -10, "max": 30, "description": "Ajuste simulado de precio en % para esta ciudad; vacío = sin ajuste" }
+  }
+}

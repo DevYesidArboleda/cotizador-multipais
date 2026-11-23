@@ -25,5 +25,22 @@ updates:
       docker-images:
         patterns: ["*"]
 
-  # npm (frontend/backend) se habilita en la Fase 4-5, cuando existan los package.json
-  # (antes Dependabot falla con "package.json not found"). Responsable: @devops-engineer.
+  # npm se habilita por módulo SOLO cuando existe su package.json (si no, Dependabot falla con "package.json not found").
+  # /backend: habilitado abajo. /frontend: PENDIENTE hasta que exista frontend/package.json; al añadirlo, agrupar y
+  # ignorar majors de Angular (ignore: dependency-name "@angular/*", update-types version-update:semver-major).
+  # Responsable: @devops-engineer.
+
+  # npm backend: habilitado (existe backend/package.json). Un solo PR agrupado; sin majors de Strapi.
+  - package-ecosystem: npm
+    directory: /backend
+    schedule: { interval: monthly }
+    open-pull-requests-limit: 2
+    commit-message: { prefix: "build(deps)" }
+    ignore:
+      - dependency-name: "@strapi/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: strapi
+        update-types: ["version-update:semver-major"]
+    groups:
+      backend-npm:
+        patterns: ["*"]

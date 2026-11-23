@@ -48,6 +48,11 @@ jobs:
         run: docker run --rm -v "$PWD:/repo" --workdir /repo rhysd/actionlint:latest -color
       - name: Trazabilidad US → SPEC → ADR → tests → review
         run: node scripts/trace-check.mjs
+      - name: Contrato Strapi compila con tsc --strict, sin any (ADR-001 §6)
+        # TypeScript se descarga solo para este paso (sin instalación global ni package.json en la raíz).
+        run: npx -y -p typescript@5 tsc --noEmit --strict --target ES2022 --module ES2022 --moduleResolution bundler docs/contracts/strapi-contracts.ts
+      - name: Autoprueba del smoke de seguridad (servidor simulado, detecta fallos)
+        run: node scripts/security-smoke.selftest.mjs
       - name: Escaneo de secretos (gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -104,24 +109,28 @@ jobs:
         run: npm audit --omit=dev --audit-level=critical || true
 
   e2e:
-    name: E2E (docker compose + Playwright)
+    name: E2E (docker compose + smoke + Playwright)
     runs-on: ubuntu-latest
     needs: [detect, frontend, backend]
     if: needs.detect.outputs.e2e == 'true'
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Levantar el stack con un solo comando
-        run: docker compose up -d --build --wait --wait-timeout 420
-      - name: Smoke de seguridad de la API pública
-        run: |
-          curl -fsS "http://localhost:4200/api/countries?filters%5Bcode%5D%5B%24eq%5D=co" | grep -q '"code":"co"'
-          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:1337/api/form-fields -H 'Content-Type: application/json' -d '{"data":{}}')" -ge 400
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      - name: Levantar el stack con un solo comando (SQLite)
+        run: docker compose up -d --build --wait --wait-timeout 420
+      - name: Extraer el bundle servido por la imagen (para el punto 9 del smoke)
+        run: docker compose cp frontend:/usr/share/nginx/html ./served-bundle
+      - name: Smoke de seguridad (ADR-002 §6) contra proxy y Strapi directo
+        env:
+          APP_URL: http://localhost:4200
+          STRAPI_URL: http://localhost:1337
+          SMOKE_BUNDLE_DIR: served-bundle
+        run: node scripts/security-smoke.mjs
       - working-directory: frontend
         run: |
           npm ci
@@ -140,6 +149,44 @@ jobs:
         run: |
           docker compose logs --no-color > compose.log
           tail -200 compose.log
+      - name: Apagar el stack
+        if: ${{ always() }}
+        run: docker compose down -v
+
+  e2e-postgres:
+    name: E2E Postgres (paridad con la nube, ADR-002 R1)
+    runs-on: ubuntu-latest
+    needs: [detect, frontend, backend]
+    if: needs.detect.outputs.e2e == 'true'
+    timeout-minutes: 30
+    env:
+      # Override con servicio postgres; mismas imágenes, solo cambian variables (12-factor).
+      COMPOSE_FILE: docker-compose.yml:docker-compose.postgres.yml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Levantar el stack con Postgres
+        run: docker compose up -d --build --wait --wait-timeout 420
+      - name: Verificar que Strapi usa Postgres
+        run: docker compose exec -T postgres psql -U strapi -d strapi -tAc "select count(*) from information_schema.tables where table_name = 'strapi_core_store_settings'" | grep -qx 1
+      - name: Extraer el bundle servido por la imagen
+        run: docker compose cp frontend:/usr/share/nginx/html ./served-bundle
+      - name: Smoke de seguridad (ADR-002 §6) contra proxy y Strapi directo
+        env:
+          APP_URL: http://localhost:4200
+          STRAPI_URL: http://localhost:1337
+          SMOKE_BUNDLE_DIR: served-bundle
+        run: node scripts/security-smoke.mjs
+      - name: Logs del stack si falla
+        if: failure()
+        run: |
+          docker compose logs --no-color > compose.log
+          tail -200 compose.log
+      - name: Apagar el stack
+        if: ${{ always() }}
+        run: docker compose down -v
 
   images:
     name: Imágenes (build + escaneo Trivy)

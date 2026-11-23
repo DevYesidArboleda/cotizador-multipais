@@ -141,3 +141,9 @@ Reglas de las consultas:
 - `currency` es escalar y viaja sin `populate`.
 - `priceAdjustmentPct` viaja dentro de `populate[options]`.
 - `meta.pagination.total > 100` es `config-error` en el front.
+
+
+## Notas de implementación (Fase 4, log 07)
+- **`locale` es un nombre de atributo reservado en Strapi 5.63:** el esquema de `country` lo guarda como `localeCode` y el controller lo expone como `locale` en la respuesta pública (contrato intacto). No filtrar por `locale` en queries.
+- Strapi crea automáticamente los API tokens "Read Only" y "Full Access": el bootstrap los revoca en cada arranque.
+- Con `SEED_ON_BOOT=true` un campo/plan borrado a propósito por negocio se recrea en el siguiente arranque: en la nube poner `SEED_ON_BOOT=false` tras el primer despliegue.

@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_fields",
+  "info": { "singularName": "form-field", "pluralName": "form-fields", "displayName": "Campo de formulario" },
+  "options": { "draftAndPublish": true },
+  "attributes": {
+    "key": { "type": "string", "required": true, "regex": "^[a-zA-Z][a-zA-Z0-9_]*$", "description": "Solo para el DOM. Renombrable: la lógica usa el rol semántico." },
+    "semanticRole": {
+      "type": "enumeration",
+      "enum": ["none", "full_name", "document_type", "document_number", "birth_date", "email", "phone", "city", "vehicle_plate", "vehicle_brand", "vehicle_model", "vehicle_year", "vehicle_use"],
+      "required": true,
+      "default": "none"
+    },
+    "section": { "type": "enumeration", "enum": ["policyholder", "vehicle"], "required": true },
+    "label": { "type": "string", "required": true },
+    "type": { "type": "enumeration", "enum": ["text", "number", "select", "date", "checkbox"], "required": true },
+    "required": { "type": "boolean", "default": false },
+    "order": { "type": "integer", "required": true, "default": 0 },
+    "placeholder": { "type": "string" },
+    "helpText": { "type": "text" },
+    "errorMessage": { "type": "string", "required": true },
+    "validation": { "type": "component", "repeatable": false, "component": "form.validation" },
+    "options": { "type": "component", "repeatable": true, "component": "form.field-option" },
+    "country": { "type": "relation", "relation": "manyToOne", "target": "api::country.country", "required": true }
+  }
+}

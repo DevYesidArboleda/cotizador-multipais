@@ -1,5 +1,6 @@
 # Render Blueprint (ADR-003). Servicios image-backed: Render NO compila; despliega las imágenes que publica el CD en GHCR.
-# Pasos únicos en el dashboard: crear el Blueprint, pegar DATABASE_URL (Neon) y STRAPI_UPSTREAM, y copiar los deploy hooks a GitHub Secrets.
+# Pasos únicos en el dashboard: crear el Blueprint, pegar DATABASE_URL (Neon), STRAPI_ADMIN_EMAIL/PASSWORD y STRAPI_UPSTREAM,
+# y copiar los deploy hooks a GitHub Secrets. Todo `sync: false` es un secreto/valor que NO vive en el repo.
 services:
   - type: web
     name: cotizador-strapi
@@ -20,7 +21,13 @@ services:
       - key: SEED_ON_BOOT
         value: "true"
       - key: PUBLIC_URL
-        sync: false          # p. ej. https://cotizador-strapi.onrender.com
+        sync: false          # https://cotizador-strapi.onrender.com (origen del admin y único origen de strapi::cors, ADR-002)
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384
+      - key: STRAPI_ADMIN_EMAIL
+        sync: false          # Secret: super-admin inicial creado por el bootstrap (evita que /admin quede en modo registro abierto)
+      - key: STRAPI_ADMIN_PASSWORD
+        sync: false          # Secret: mín. 8 caracteres con mayúscula, minúscula y número
       - key: APP_KEYS
         generateValue: true
       - key: API_TOKEN_SALT

@@ -1,0 +1,8 @@
+{
+  "collectionName": "components_plan_benefits",
+  "info": { "displayName": "Beneficio" },
+  "options": {},
+  "attributes": {
+    "text": { "type": "string", "required": true }
+  }
+}

@@ -1,16 +1,14 @@
-# gitleaks: reglas por defecto + excepciones justificadas (ADR-002).
-# Los únicos "secretos" permitidos son valores FICTICIOS de desarrollo local, documentados como tales.
+# gitleaks: reglas por defecto + allowlist MINIMA (ADR-002 R6, ADR-003 §4.1).
+# Unica excepcion: los valores FICTICIOS de desarrollo local de los compose (no se usan en la nube;
+# alli vienen de Render/GitHub Secrets). No hay allowlist por regex (seria valida en todo el repo)
+# ni para .env.example (solo contiene marcadores de posicion).
 title = "cotizador-multipais"
 
 [extend]
 useDefault = true
 
 [allowlist]
-description = "Valores ficticios de desarrollo (no se usan en la nube; allí vienen de Render/GitHub Secrets)"
+description = "docker-compose*.yml: valores ficticios de desarrollo"
 paths = [
-  '''^docker-compose\.yml$''',
-  '''^\.env\.example$''',
-]
-regexes = [
-  '''(?i)(dev|fictitious)[A-Za-z]*\d{6,}''',
+  '''^docker-compose(\.postgres)?\.yml$''',
 ]

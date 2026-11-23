@@ -1,0 +1,19 @@
+{
+  "kind": "collectionType",
+  "collectionName": "insurance_plans",
+  "info": { "singularName": "insurance-plan", "pluralName": "insurance-plans", "displayName": "Plan de seguro" },
+  "options": { "draftAndPublish": true },
+  "attributes": {
+    "slug": { "type": "string", "required": true },
+    "name": { "type": "string", "required": true },
+    "shortDescription": { "type": "text" },
+    "basePrice": { "type": "integer", "required": true, "min": 0, "description": "Entero en la moneda del país." },
+    "currency": { "type": "enumeration", "enum": ["COP", "CLP"], "required": true },
+    "coverages": { "type": "component", "repeatable": true, "component": "plan.coverage" },
+    "benefits": { "type": "component", "repeatable": true, "component": "plan.benefit" },
+    "order": { "type": "integer", "required": true, "default": 0 },
+    "isRecommended": { "type": "boolean", "default": false },
+    "isActive": { "type": "boolean", "default": true },
+    "country": { "type": "relation", "relation": "manyToOne", "target": "api::country.country", "required": true }
+  }
+}

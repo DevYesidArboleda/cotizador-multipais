@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "countries",
+  "info": { "singularName": "country", "pluralName": "countries", "displayName": "País" },
+  "options": { "draftAndPublish": false },
+  "attributes": {
+    "code": { "type": "string", "unique": true, "required": true, "regex": "^[a-z]{2}$" },
+    "name": { "type": "string", "required": true },
+    "currencyCode": { "type": "string", "required": true, "regex": "^[A-Z]{3}$" },
+    "localeCode": { "type": "string", "required": true, "regex": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$", "description": "Locale BCP 47 (p. ej. es-CO). La API REST lo expone como `locale` (contrato)." },
+    "legalAge": { "type": "integer", "required": true, "min": 0, "default": 18 },
+    "vehicleMaxAgeYears": { "type": "integer", "required": true, "min": 0, "default": 20 },
+    "vehicleMaxFutureYears": { "type": "integer", "required": true, "min": 0, "default": 1 },
+    "termsTitle": { "type": "string", "required": true },
+    "termsContent": { "type": "text", "description": "Texto plano. Párrafos separados por una línea en blanco. Sin HTML ni Markdown." },
+    "termsVersion": { "type": "string", "required": true }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_form_validations",
+  "info": { "displayName": "Validación", "description": "Reglas declarativas del campo" },
+  "options": {},
+  "attributes": {
+    "min": { "type": "integer" },
+    "max": { "type": "integer" },
+    "minLength": { "type": "integer", "min": 0 },
+    "maxLength": { "type": "integer", "min": 0 },
+    "pattern": { "type": "string" },
+    "validatorKey": {
+      "type": "enumeration",
+      "enum": ["none", "legal_age", "vehicle_year_range", "cl_rut", "depends_on_option_pattern"],
+      "required": true,
+      "default": "none"
+    },
+    "dependsOnRole": {
+      "type": "enumeration",
+      "enum": ["full_name", "document_type", "document_number", "birth_date", "email", "phone", "city", "vehicle_plate", "vehicle_brand", "vehicle_model", "vehicle_year", "vehicle_use"]
+    }
+  }
+}
