@@ -27,3 +27,16 @@
 ## Nota del Orquestador (para la v3)
 - Corrección 2 amplía el formato aceptado en un producto de *seguro de autos*; se implementa solo como patrón configurable en Strapi (sin lógica nueva) y la spec debe dejar explícito que el producto sigue siendo de autos.
 - Corrección 3 no debe hardcodear ciudades en Angular (regla 2 de `CLAUDE.md`): el agente debe proponer dónde vive el factor (p. ej. atributo de la opción en Strapi) y justificarlo.
+
+---
+
+## Cierre de HITL-1 (2026-11-23, tras verificar v3)
+- **Verificación del Orquestador:** v3 aplica las 5 decisiones y solo eso (`git diff --stat` limitado a las 3 specs; `trace-check` OK, 167 IDs). Ver `docs/logs/03-spec-analyst-specs-v3.md`.
+- **Preguntas abiertas por el agente y respuesta humana (literal de la selección):**
+
+| ID | Pregunta | Decisión humana |
+| :--- | :--- | :--- |
+| GAP-02.18 / GAP-01.22 | Factor por ciudad como `priceAdjustmentPct` opcional en la opción de ciudad en Strapi, rango [-10, +30], ausente = 0 % | **"Apruebo (-10 % a +30 %)"** |
+| Riesgo (b)8 | ¿El correo debe ser rol requerido (ausencia en Strapi → `config-error`)? | **"No, que lo decida Strapi"** — GAP-01.2 no se reabre |
+
+- **Decisión final:** `APROBADO`. Las tres specs pasan a estado `Aprobado` (v3). Se desbloquea la Fase 3.
