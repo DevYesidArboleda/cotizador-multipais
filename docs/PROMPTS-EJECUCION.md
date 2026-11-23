@@ -1,6 +1,6 @@
 # Guía de Prompts para Operar el Equipo
 
-El Orquestador (sesión principal) despacha cada subagente con un prompt que **siempre** incluye: (1) la ruta de su definición en `.claude/agents/`, (2) sus entradas exactas, (3) el entregable y (4) el bloque de Handoff de `CLAUDE.md` §6. Al terminar, el informe se guarda verbatim en `docs/logs/`.
+El Orquestador (sesión principal) despacha cada subagente con un prompt que **siempre** incluye: (1) la ruta **exacta** de su definición en `.claude/agents/` como primera entrada (omitirla ocurrió en el log 04), (2) sus entradas exactas, (3) el entregable y (4) el bloque de Handoff de `CLAUDE.md` §6. Al terminar, el informe se guarda verbatim en `docs/logs/`.
 
 En **Claude Code CLI** los mismos prompts funcionan anteponiendo `@<agente>` (las definiciones de `.claude/agents/` se registran como subagentes).
 
