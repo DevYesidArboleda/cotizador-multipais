@@ -15,6 +15,25 @@ permissions:
   contents: read
 
 jobs:
+  detect:
+    name: Detectar módulos
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.d.outputs.frontend }}
+      backend: ${{ steps.d.outputs.backend }}
+      e2e: ${{ steps.d.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: d
+        # Mientras el flujo SDD avanza, frontend/ y backend/ aún pueden no existir: sus jobs se omiten sin fallar.
+        run: |
+          has() { [ -e "$1" ] && echo true || echo false; }
+          {
+            echo "frontend=$(has frontend/package.json)"
+            echo "backend=$(has backend/package.json)"
+            if [ -d frontend/e2e ] && [ -f frontend/package.json ] && [ -f backend/package.json ]; then echo "e2e=true"; else echo "e2e=false"; fi
+          } >> "$GITHUB_OUTPUT"
+
   governance:
     name: Gobierno (trazabilidad + secretos)
     runs-on: ubuntu-latest
@@ -25,8 +44,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Lint de workflows (actionlint)
-        uses: raven-actions/actionlint@v2
+      - name: Lint de workflows (actionlint, imagen oficial con shellcheck)
+        run: docker run --rm -v "$PWD:/repo" --workdir /repo rhysd/actionlint:latest -color
       - name: Trazabilidad US → SPEC → ADR → tests → review
         run: node scripts/trace-check.mjs
       - name: Escaneo de secretos (gitleaks)
@@ -42,7 +61,8 @@ jobs:
   frontend:
     name: Frontend (lint, unit, build)
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('frontend/package.json') != '' }}
+    needs: detect
+    if: needs.detect.outputs.frontend == 'true'
     defaults:
       run:
         working-directory: frontend
@@ -66,7 +86,8 @@ jobs:
   backend:
     name: Backend (build Strapi)
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('backend/package.json') != '' }}
+    needs: detect
+    if: needs.detect.outputs.backend == 'true'
     defaults:
       run:
         working-directory: backend
@@ -85,8 +106,8 @@ jobs:
   e2e:
     name: E2E (docker compose + Playwright)
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
-    if: ${{ hashFiles('frontend/e2e/**') != '' }}
+    needs: [detect, frontend, backend]
+    if: needs.detect.outputs.e2e == 'true'
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -116,12 +137,15 @@ jobs:
           retention-days: 14
       - name: Logs del stack si falla
         if: failure()
-        run: docker compose logs --no-color > compose.log; tail -200 compose.log
+        run: |
+          docker compose logs --no-color > compose.log
+          tail -200 compose.log
 
   images:
     name: Imágenes (build + escaneo Trivy)
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
+    needs: [detect, frontend, backend]
+    if: needs.detect.outputs.frontend == 'true' && needs.detect.outputs.backend == 'true'
     strategy:
       matrix:
         service: [frontend, backend]

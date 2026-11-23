@@ -1,21 +1,50 @@
+# Política de dependencias (ADR-003):
+# - Un PR agrupado por ecosistema para no inundar el repo de PRs.
+# - Node solo en versiones LTS soportadas por Strapi 5: los saltos de major de Node/Angular/Strapi
+#   se hacen a mano con un ADR, nunca automáticamente.
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: /frontend
-    schedule: { interval: weekly }
-    groups:
-      angular: { patterns: ["@angular*", "@angular-devkit/*"] }
-  - package-ecosystem: npm
-    directory: /backend
-    schedule: { interval: weekly }
-    groups:
-      strapi: { patterns: ["@strapi/*"] }
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
+    open-pull-requests-limit: 2
+    commit-message: { prefix: "ci(deps)" }
+    groups:
+      github-actions:
+        patterns: ["*"]
+
   - package-ecosystem: docker
+    directories: ["/frontend", "/backend"]
+    schedule: { interval: monthly }
+    open-pull-requests-limit: 2
+    commit-message: { prefix: "build(deps)" }
+    ignore:
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
+    groups:
+      docker-images:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
     directory: /frontend
-    schedule: { interval: monthly }
-  - package-ecosystem: docker
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+    commit-message: { prefix: "build(deps)" }
+    ignore:
+      - dependency-name: "@angular*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      frontend-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: npm
     directory: /backend
-    schedule: { interval: monthly }
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+    commit-message: { prefix: "build(deps)" }
+    ignore:
+      - dependency-name: "@strapi/*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      backend-minor-patch:
+        update-types: ["minor", "patch"]

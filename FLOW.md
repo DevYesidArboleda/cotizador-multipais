@@ -65,6 +65,7 @@ flowchart TD
 > *Se completa con evidencia real al cierre (con referencia al log en `docs/logs/`).* Ajustes ya realizados en la fase de triaje:
 - El kit original enlazaba precio y máscara a `key`s concretos: un cambio de negocio en Strapi rompía la app en silencio → se introdujo `semanticRole` (regla 3 de `CLAUDE.md`).
 - El entorno del agente no tiene daemon Docker ni permite ejecutar binarios descargados (actionlint) → la verificación de contenedores pasó a HITL-2b humano + job `e2e` del CI, y actionlint a un paso del CI.
+- **Consecuencia real de lo anterior:** sin actionlint local, el primer push dejó un `ci.yml` **inválido** (`hashFiles()` en el `if:` de nivel de job, solo permitido dentro de pasos). GitHub rechazó el workflow y fallaron también los 8 PRs que Dependabot abrió de inmediato. El humano lo detectó en la pestaña Actions y lo trajo con capturas. Ajuste: job `detect` con *outputs*, scripts sin patrones que shellcheck marque, actionlint desde su imagen oficial como **primer** paso del CI, y política de Dependabot agrupada que ignora saltos de *major* de Node/Angular/Strapi (Node 26 no es LTS). Lección incorporada a `@devops-engineer`: todo YAML de CI que no pueda validarse localmente se declara "no verificado" en el Handoff y su primera ejecución remota es un checkpoint humano. Ver `docs/logs/00b-orquestador-ci-fix.md`.
 
 ### 3. ¿En qué puntos decidí NO usar IA y por qué?
 - **Triaje y prioridad (paso 1) y decisiones de `GAP` de negocio (HITL-1):** son compromisos de producto, no inferencias.
