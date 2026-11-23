@@ -25,26 +25,5 @@ updates:
       docker-images:
         patterns: ["*"]
 
-  - package-ecosystem: npm
-    directory: /frontend
-    schedule: { interval: weekly }
-    open-pull-requests-limit: 3
-    commit-message: { prefix: "build(deps)" }
-    ignore:
-      - dependency-name: "@angular*"
-        update-types: ["version-update:semver-major"]
-    groups:
-      frontend-minor-patch:
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: npm
-    directory: /backend
-    schedule: { interval: weekly }
-    open-pull-requests-limit: 3
-    commit-message: { prefix: "build(deps)" }
-    ignore:
-      - dependency-name: "@strapi/*"
-        update-types: ["version-update:semver-major"]
-    groups:
-      backend-minor-patch:
-        update-types: ["minor", "patch"]
+  # npm (frontend/backend) se habilita en la Fase 4-5, cuando existan los package.json
+  # (antes Dependabot falla con "package.json not found"). Responsable: @devops-engineer.

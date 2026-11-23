@@ -31,3 +31,19 @@ Invalid workflow file: .github/workflows/ci.yml#L1
 ## Verificación
 - `grep hashFiles .github/` → sin coincidencias; YAML parsea.
 - **No verificado localmente con actionlint** (denegado en el entorno) → la verificación es el próximo run de Actions, revisado por el humano.
+
+---
+
+## Segunda ronda (15:01) — tras conectar GitHub
+### [Humano] 15:01 (literal)
+> ya esta el conector de github, seguido de si sigues las reglas de ir documentado todo y respondiendo a las preguntas ? se debe ir haciendo lo que dice el pdf
+
+### Verificación del Orquestador vía `gh` (lectura)
+- `add_repo` → lectura OK; **push rechazado** (la GitHub App de Claude no está instalada en el repo). El humano sigue empujando.
+- `gh run list`: CI sobre `48aa7bd` → **success**; PRs agrupados de Dependabot → **success**.
+- **CD → failure:** `docker/build-push-action` → `"/package.json": not found` (aún no existe `frontend/`).
+- **Dependabot npm /frontend → failure:** `Error during file fetching; aborting: /frontend/package.json not found`.
+
+### Corrección
+- `cd.yml`: job `detect` que omite publicación/despliegue con `::notice::` mientras no existan ambos módulos.
+- `dependabot.yml`: ecosistemas npm retirados hasta Fase 4-5; tarea asignada a `@devops-engineer` (punto 5 de su definición).

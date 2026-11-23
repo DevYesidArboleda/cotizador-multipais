@@ -16,9 +16,30 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  detect:
+    name: ¿Hay aplicación que publicar?
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.d.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: d
+        # Hasta que existan frontend/ y backend/ (Fases 4-5 del flujo SDD) no hay imágenes que publicar.
+        run: |
+          if [ -f frontend/package.json ] && [ -f backend/package.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Aún no existen frontend/ y backend/: se omite la publicación y el despliegue."
+          fi
+
   publish:
     name: Publicar imágenes en GHCR
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    needs: detect
+    if: needs.detect.outputs.ready == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
