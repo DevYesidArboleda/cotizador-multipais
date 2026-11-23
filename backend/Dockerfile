@@ -2,7 +2,7 @@
 # Strapi 5 — imagen de producción multi-stage (ADR-002, ADR-003).
 # El admin se compila en build: el contenedor de runtime no necesita toolchain ni memoria extra.
 
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 RUN apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev vips-dev python3 git
 WORKDIR /opt/app
 COPY package.json package-lock.json* ./
@@ -11,7 +11,7 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build && npm prune --omit=dev
 
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 RUN apk add --no-cache vips wget
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
