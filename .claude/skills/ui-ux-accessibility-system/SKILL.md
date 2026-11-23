@@ -1,26 +1,25 @@
 ---
 name: ui-ux-accessibility-system
-description: Guía de Diseño UI/UX y Accesibilidad WCAG AA para el cotizador de seguros. Define sistema visual sobrio, patrón de wizard de 3 pasos, responsive mobile/desktop y navegación 100% por teclado.
+description: Guía UI/UX y accesibilidad WCAG 2.2 AA del cotizador - sistema visual sobrio de insurtech con tokens CSS, wizard de 3 pasos + confirmación, responsive mobile/desktop, estados y navegación 100% por teclado.
 ---
 
 # Skill: Sistema UI/UX y Accesibilidad (Diseñador)
 
-## 1. Dirección Visual (Insurtech Confiable)
-- **Jerarquía limpia:** Fondo neutro claro (`#F8FAFC`), tarjetas blancas con borde sutil `1px` (`#E2E8F0`), texto principal de alto contraste (`#0F172A`) y un único color de acento primario (azul institucional o esmeralda sobrio) reservado para el CTA principal y paso activo.
-- **Sin ruido visual:** Evitar gradientes recargados, animaciones distractivas o etiquetas innecesarias. Priorizar claridad en precios, coberturas y errores de validación.
-- **Números tabulares:** Usar `font-variant-numeric: tabular-nums` en todos los precios COP/CLP para comparación vertical limpia.
+## 1. Dirección visual (insurtech confiable)
+- Tokens como CSS custom properties (`--color-bg`, `--color-surface`, `--color-text`, `--color-accent`, `--color-danger`, `--radius-*`, `--space-*`), con ratio de contraste documentado.
+- Base: fondo neutro claro, superficies blancas con borde sutil, texto de alto contraste y **un** acento reservado para CTA principal y paso activo. Sin gradientes recargados.
+- Precios con `font-variant-numeric: tabular-nums`. Tipografía de sistema o una sola familia web con `font-display: swap`.
 
-## 2. Arquitectura del Wizard (3 Pasos + Confirmación)
-- **Header compacto:** Marca ficticia + selector de país accesible (`Colombia` / `Chile`) que avisa o aísla el estado al cambiar.
-- **Indicador de progreso (`<nav aria-label="Progreso de cotización">`):** 3 pasos numerados con `aria-current="step"` en el paso activo y navegación clara hacia pasos ya completados.
-- **Paso 1 (Formulario):** Agrupación visual en dos bloques limpios ("Datos del tomador" y "Datos del vehículo"), grilla de 2 columnas en desktop y 1 columna en mobile (`< 768px`).
-- **Paso 2 (Planes):** Tarjetas comparables en grid responsive (1 col mobile, 3 cols desktop). El plan recomendado lleva etiqueta textual clara ("Recomendado") + borde destacado (nunca depender solo del color).
-- **Paso 3 (Resumen y Pago):** Layout de 2 columnas en desktop (izquierda: resumen con botones "Editar datos" y "Cambiar plan" + T&C; derecha: caja de total y pago simulado).
+## 2. Arquitectura del wizard
+- Header: marca ficticia + selector de país (`<select>` o enlaces) que **aísla** el estado por país y lo anuncia.
+- Stepper `<nav aria-label="Progreso de cotización">` con `<ol>`, `aria-current="step"`, pasos completados navegables.
+- Paso 1: bloques "Datos del tomador" / "Datos del vehículo" (`<fieldset>`), 2 columnas desktop, 1 mobile (< 768 px).
+- Paso 2: tarjetas en grid (1/2/3 columnas), plan recomendado con insignia textual "Recomendado" + borde (no solo color).
+- Paso 3: resumen (Editar datos / Cambiar plan) + T&C + caja de total y pago simulado (sticky en desktop).
+- Confirmación: número de cotización, foco en el título, acción "Nueva cotización".
 
-## 3. Estándar WCAG AA (Operable 100% con Teclado)
-- Todos los controles deben ser elementos nativos (`<button>`, `<input>`, `<select>`, `<a>`), nunca `<div>` clickeables.
-- Anillo de foco visible en todos los controles (`focus-visible:outline-2 focus-visible:outline-offset-2`).
-- Cada campo del Paso 1 vincula `<label [for]="field.key">`, texto de ayuda y mensaje de error mediante `aria-describedby` y `aria-invalid`.
-- Al fallar validación o cargar un nuevo paso, gestionar el foco hacia el primer error o el encabezado `<h1>` del nuevo paso.
-- Mensajes de error de formulario y rechazo de pago deben anunciarse con `role="alert"` o `aria-live="polite"`.
-- Targets táctiles en mobile `>= 44px` de alto.
+## 3. WCAG 2.2 AA operable con teclado
+- Solo elementos nativos interactivos. Foco visible (`outline` ≥ 2 px, contraste ≥ 3:1). Targets ≥ 44 × 44 px (mobile).
+- Cada campo: `<label for>`, ayuda + error vía `aria-describedby`, `aria-invalid`.
+- Foco gestionado: primer error al validar; `<h1 tabindex="-1">` al cambiar de paso; alerta de pago rechazado con `role="alert"`.
+- `prefers-reduced-motion` respetado; zoom 200 % sin pérdida de contenido.

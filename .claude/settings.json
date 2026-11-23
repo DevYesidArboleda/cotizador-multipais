@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./backend/.env)",
+      "Read(./backend/.tmp/**)",
+      "Edit(./docs/user-stories/**)",
+      "Write(./docs/user-stories/**)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(docker system prune:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(docker compose down -v:*)"
+    ],
+    "allow": [
+      "Bash(npm ci:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(node scripts/trace-check.mjs:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(docker compose config:*)"
+    ]
+  }
+}

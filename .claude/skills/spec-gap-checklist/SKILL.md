@@ -1,31 +1,50 @@
 ---
 name: spec-gap-checklist
-description: Checklist obligatoria para el rol de Analista de Producto/Specs. Garantiza que cada SPEC-US-XX detecte vacíos reales de negocio, casos borde locales (CO/CL), estados de red y accesibilidad antes de escribir código.
+description: Checklist obligatoria del Analista SDD. Garantiza que cada SPEC-US-XX detecte vacíos reales (GAP-), defina reglas medibles (R-) y criterios Gherkin (AC-) trazables a tests, cubriendo multi-país CO/CL, configurabilidad sin deploy, acoplamiento semántico, estados de red y accesibilidad.
 ---
 
 # Skill: Checklist de Detección de Vacíos (Analista SDD)
 
-Antes de cerrar cualquier `docs/specs/SPEC-US-XX.md`, valida y documenta una decisión explícita para cada dimensión:
+## 0. Formato obligatorio de la spec
+```
+# SPEC-US-XX — Título
+- Historia origen: docs/user-stories/US-XX.md · Versión: vN · Estado: Borrador | Aprobado (HITL-1, fecha)
+- ADRs relacionados · Specs relacionadas
+## 1. Vacíos detectados (tabla: ID GAP | Pregunta | Riesgo si no se decide | Decisión propuesta | ¿Requiere humano?)
+## 2. Reglas de negocio (tabla: ID R | Regla medible | Origen: historia/GAP | Verificación)
+## 3. Criterios de aceptación (Gherkin, cada escenario con ID AC)
+## 4. Contrato de datos (referencia a docs/contracts/strapi-contracts.ts + query REST exacta)
+## 5. Estados de UI y accesibilidad
+## 6. Matriz de verificación (ID → tipo de test → archivo planificado)
+## 7. Fuera de alcance
+## Changelog
+```
 
-## 1. Contexto Multi-País (Colombia y Chile)
-- ¿Cómo entra el usuario a un país específico y qué pasa si escribe un código inválido en la URL (`/pe/quote`)?
-- ¿Qué sucede con los datos ya llenados si el usuario cambia de Colombia a Chile en medio del wizard?
-- ¿Cómo se diferencian documentos e identificadores (CO: tipo doc + número + placa; CL: RUT con dígito verificador + patente)?
+## 1. Contexto multi-país (CO/CL)
+- Entrada al país (ruta), código inválido (`/pe/...`), cambio de país a mitad del wizard (¿aislamiento o aviso?).
+- Diferencias de documento e identificador: CO tipo (CC/CE) + número + placa; CL RUT con DV Módulo 11 + patente (formatos nuevo `BBBB12` y antiguo `BB1234`).
+- Moneda y formato: COP/CLP sin decimales, locale `es-CO` / `es-CL`. La moneda **se deriva del país**, no del plan.
 
-## 2. Configurabilidad Dinámica sin Deploy
-- ¿Qué ocurre si negocio agrega, reordena o elimina un campo en Strapi mientras el usuario tenía datos previos en `sessionStorage`?
-- ¿Se filtran únicamente registros `published` y, en planes, además `isActive = true`?
+## 2. Configurabilidad dinámica sin deploy
+- Agregar / quitar / reordenar / despublicar campos y planes: comportamiento con datos previos en `sessionStorage`.
+- Solo `published`; en planes además `isActive = true`.
+- **Acoplamiento semántico:** ¿qué lógica depende de un campo concreto (precio, máscara, edad, validación cruzada)? Debe resolverse por `semanticRole`. ¿Qué pasa si negocio borra el campo con un rol requerido? (error de configuración visible, no crash).
+- ¿Qué parámetros de reglas viven en Strapi? (edad mínima, rango de años, patrones por tipo de documento).
+- Validaciones que dependen de otro campo (p. ej. patrón del número según el tipo de documento elegido).
 
-## 3. Reglas Temporales y de Negocio
-- **Mayoría de edad:** Comparar fecha calendario local sin sesgo UTC (quien cumple 18 hoy es elegible; quien cumple mañana no).
-- **Año del vehículo:** Confirmar extremos inclusivos `[añoActual - 20, añoActual + 1]`.
-- **Precio simulado:** Fórmula explícita, determinista, sin decimales para COP/CLP y reactiva si el usuario edita el Paso 1.
-- **Enmascaramiento:** Definir comportamiento con documentos largos, RUT con puntos/guión y cadenas cortas (`<= 4` caracteres).
+## 3. Reglas temporales y de negocio
+- Mayoría de edad en fecha calendario local, sin sesgo UTC (cumple 18 hoy → válido; mañana → inválido). Fechas futuras.
+- Año del vehículo con extremos inclusivos explícitos y parametrizables.
+- Precio simulado: fórmula determinista, redondeo, sin decimales, reactiva a cambios del Paso 1, documentada con ejemplos numéricos.
+- Enmascaramiento: documentos largos, RUT con puntos/guion, cadenas ≤ 4 caracteres.
 
-## 4. Estados y Resiliencia
-- Definir los 4 estados de cada vista: `loading`, `populated`, `empty` y `error` recuperable.
-- Guardias de navegación: impedir saltar directamente a Paso 2 o Paso 3 sin completar pasos previos.
-- Pago simulado: prevención de doble envío (clic rápido + `Enter`) y escenario determinista de pago rechazado conservando el 100% de los datos.
+## 4. Estados y resiliencia
+- 4 estados por vista (`loading`, `ready`, `empty`, `error` recuperable) + `config-error`.
+- Guards: no saltar a pasos posteriores; recarga del navegador en cada paso.
+- Pago simulado: doble envío (doble clic + `Enter`), rechazo determinista, reintento sin pérdida de datos, timeout.
 
-## 5. Verificabilidad y Trazabilidad
-- Cada regla de negocio debe mapearse a al menos 1 test unitario o escenario E2E concreto.
+## 5. Accesibilidad
+- Labels, `aria-describedby`, `aria-invalid`, foco al primer error / encabezado del paso, anuncios `aria-live`, selección de plan con teclado.
+
+## 6. Verificabilidad y trazabilidad
+- Cada `R-` y `AC-` mapea a ≥ 1 test con el ID en su título. Ninguna regla queda "verificada manualmente" sin justificación.

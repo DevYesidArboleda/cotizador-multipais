@@ -1,29 +1,37 @@
 ---
 name: docker-single-command-ops
-description: Estándar DevOps para empaquetar Strapi 5 y Angular 21+ con arranque en un solo comando (docker compose up), healthchecks, Nginx reverse proxy y aislamiento estricto de secretos.
+description: Estándar de plataforma - docker compose de un solo comando, imágenes multi-stage de producción idénticas en local y nube, Nginx con upstream por variable de entorno, healthchecks, aislamiento de secretos y pipelines GitHub Actions (CI con puertas de calidad, CD a GHCR).
 ---
 
-# Skill: Docker de Un Solo Comando y Proxy Seguro (DevOps)
+# Skill: Docker de Un Solo Comando + CI/CD (DevOps)
 
-## 1. Requisitos de Orquestación
-- Un solo comando `docker compose up --build` debe levantar todo el entorno listo para usar sin scripts manuales adicionales.
-- Dos servicios en una red interna compartida (`app-net`):
-  1. `strapi`: Node 20/22 Alpine, puerto `1337`, volumen persistente `strapi_data` para SQLite, `healthcheck` contra `http://localhost:1337/_health`.
-  2. `frontend`: Build multi-stage (Node build Angular → Nginx Alpine), puerto `4200:80`, `depends_on: strapi (condition: service_healthy)`.
+## 1. Orquestación local
+- `docker compose up --build` levanta `strapi` (SQLite en volumen, seed automático) y `frontend` (Nginx) sin pasos manuales. `.env` es opcional: el compose trae defaults ficticios de desarrollo.
+- `strapi`: `NODE_ENV=production` (Content-Type Builder deshabilitado: schemas como código), healthcheck `/_health`, usuario no root.
+- `frontend`: `depends_on: strapi: condition: service_healthy`, puerto `4200:8080`.
 
-## 2. Reverse Proxy en Nginx (`frontend/nginx.conf`)
-- Servir rutas SPA de Angular (`/co/quote`, `/cl/quote`) con `try_files $uri $uri/ /index.html;`.
-- Proxiar `location /api/` hacia `http://strapi:1337/api/` para que el navegador solo hable con su propio origen (cero errores CORS, cero URLs internas filtradas).
+## 2. Nginx (`frontend/nginx/default.conf.template`, envsubst de la imagen oficial)
+- `listen ${PORT}` (default 8080; Render inyecta `PORT`).
+- `location /api/ { proxy_pass ${STRAPI_UPSTREAM}/api/; }` con `proxy_set_header Host $proxy_host;` y `proxy_ssl_server_name on;` (soporta upstream HTTPS en la nube). Solo se proxea `/api/`, **nunca** `/admin`.
+- SPA fallback `try_files $uri $uri/ /index.html`, caché larga para assets con hash, `no-cache` para `index.html`.
+- Cabeceras: CSP estricta (`default-src 'self'`), `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options: DENY`.
 
-## 3. Aislamiento de Variables y Secretos
-- Proveer `.env.example` con valores ficticios seguros para desarrollo local.
-- Las claves de Strapi (`APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`) se inyectan **exclusivamente** al servicio `strapi`.
-- El servicio `frontend` **no recibe** ningún token de Strapi.
+## 3. Secretos
+- Claves de Strapi solo al servicio `strapi`. El frontend no recibe ninguna variable secreta, ni en build ni en runtime.
+- `.env` en `.gitignore`; `gitleaks` en CI.
 
-## 4. Verificación de Arranque Limpio
-Antes de dar por cerrado el trabajo de infraestructura, validar:
+## 4. CI (`.github/workflows/ci.yml`) — puertas que bloquean el merge
+1. `governance`: `node scripts/trace-check.mjs` + `gitleaks`.
+2. `frontend`: `npm ci` → lint → unit tests → build de producción.
+3. `backend`: `npm ci` → `npm run build`.
+4. `e2e`: `docker compose up -d --build --wait` → Playwright contra `http://localhost:4200` → artefacto del reporte.
+5. `security`: `npm audit --audit-level=high` (informativo) y escaneo de imágenes con Trivy.
+
+## 5. CD (`.github/workflows/cd.yml`)
+- En `main` tras CI verde: build & push a `ghcr.io/<owner>/cotizador-multipais-{frontend,backend}:{sha,latest}`, luego deploy hooks de Render con `imgURL` (solo si existen los secrets).
+
+## 6. Verificación de arranque limpio (HITL)
 ```bash
-docker compose down -v
-docker compose up --build
+docker compose down -v && docker compose up --build
 ```
-Confirmar que ambos servicios reportan estado saludable y que `http://localhost:4200/co/quote` carga los campos desde Strapi sin intervención manual.
+Ambos servicios `healthy`; `http://localhost:4200/co/quote/step-1` muestra campos desde Strapi.

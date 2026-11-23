@@ -1,29 +1,29 @@
 # Code Review — US-XX (Título)
 
 - **Fecha:** YYYY-MM-DD
-- **Revisor:** `@qa-reviewer` (Claude Code) + Validación Humana (HITL-3)
-- **Trazabilidad:** `US-XX` → `docs/specs/SPEC-US-XX.md` → `docs/adrs/ADR-001.md`
+- **Revisor:** `@qa-reviewer` (modelo: opus) + validación humana (HITL-3)
+- **Alcance:** commits `<sha_inicio>..<sha_fin>`
+- **Trazabilidad:** `US-XX` → `SPEC-US-XX vN` → `ADR-00X` → código → tests
 - **Resultado inicial:** `CAMBIOS REQUERIDOS` | `APROBADO`
-- **Resultado final:** `APROBADO`
+- **Resultado final:** `APROBADO` | `PENDIENTE`
 
-## Verificación de Suite de Pruebas
-- **Unit tests:** `PASS / FAIL` (comando ejecutado y conteo de casos)
-- **E2E tests:** `PASS / FAIL`
-- **Lint / Build:** `PASS / FAIL`
+## Ejecución real de la suite
+| Comando | Resultado literal |
+| :--- | :--- |
+| `npm test -- --watch=false` | |
+| `npm run build` | |
+| `npx playwright test` | |
+| `node scripts/trace-check.mjs` | |
 
-## Auditoría Rápida de Cumplimiento
-- [ ] Cumple todos los escenarios Gherkin de `SPEC-US-XX.md`
-- [ ] Angular 21+ moderno (standalone, signals, `@if`/`@for`, sin `NgModules`)
-- [ ] Cero tokens de escritura de Strapi en navegador o bundle
-- [ ] Permisos del rol `Public` mínimos y justificados
-- [ ] Navegación 100% por teclado y labels accesibles
-- [ ] Responsive verificado en mobile y desktop
+## Cobertura de la spec
+| ID | Evidencia en código | Test | Estado |
+| :--- | :--- | :--- | :--- |
+| R-XX.1 | `archivo.ts:12` | `x.spec.ts › [R-XX.1] ...` | OK / Falta |
 
 ## Hallazgos
+| ID | Severidad | Archivo / Línea | Regla afectada | Descripción | Acción correctiva | Estado y evidencia |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **F-XX.1** | `MAJOR` | `frontend/src/...:NN` | R-XX.n | ... | ... | `ABIERTO` |
 
-| ID | Severidad | Archivo / Línea | Descripción del hallazgo | Acción correctiva | Estado y Evidencia |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **F-01** | `BLOCKER` | `frontend/src/...` | *(Ejemplo: El pago permite doble envío al presionar Enter repetidamente)* | *(Bloquear en servicio + señal `isProcessing` + test unitario)* | `RESUELTO` — Commit `abc1234` / Test `payment.service.spec.ts` |
-
-## Intervención Humana (HITL-3)
-- **Decisión del humano:** *(Qué hallazgos priorizaste, qué ajustaste manualmente o qué le corregiste al agente)*
+## Intervención humana (HITL-3)
+- **Decisión:** ...

@@ -1,26 +1,27 @@
 ---
 name: qa-security-code-review
-description: Procedimiento de auditoría técnica, QA y seguridad para el rol @qa-reviewer. Cubre verificación contra Specs, permisos mínimos de Strapi, ausencia de tokens en cliente, accesibilidad y reporte trazable.
+description: Procedimiento de auditoría técnica, QA y seguridad del @qa-reviewer - verificación 1 a 1 contra R-/AC-, Angular moderno, seguridad de tokens y permisos Strapi, cero hardcoding, accesibilidad, plataforma Docker/CI y cierre trazable de hallazgos F-.
 ---
 
 # Skill: Auditoría de Código, QA y Seguridad (QA Reviewer)
 
-## 1. Regla de Independencia
-- El revisor trabaja estrictamente en **solo lectura** sobre `frontend/` y `backend/`.
-- Todo hallazgo se documenta en `docs/reviews/REVIEW-US-XX.md` usando `docs/reviews/REVIEW-TEMPLATE.md`.
+## 1. Independencia
+- Solo lectura sobre código e infraestructura. Reportes en `docs/reviews/REVIEW-*.md` desde `REVIEW-TEMPLATE.md`.
+- Revisar contra la spec **aprobada**, no contra lo que el implementador dice haber hecho (leer su Handoff con escepticismo).
 
-## 2. Checklist de Auditoría Obligatoria
-1. **Cumplimiento de Spec:** Verificar 1 a 1 cada escenario Gherkin y cada regla de negocio de `SPEC-US-XX.md`.
-2. **Angular 21+:** Buscar con `Grep` que no existan `NgModule`, `*ngIf`, `*ngFor` ni `any` sin justificación.
-3. **Seguridad Strapi (CRÍTICO):**
-   - Buscar en `frontend/` cualquier rastro de `Authorization: Bearer`, `STRAPI_TOKEN` o claves de escritura. Si existe → marcar como `BLOCKER`.
-   - Verificar en `backend/src/index.ts` que el rol `Public` solo habilite `find` en las 3 colecciones permitidas.
-4. **Cero hardcoding de contenido:** Comprobar que los campos del Paso 1, planes y T&C no estén hardcodeados en el front-end.
-5. **Accesibilidad por teclado:** Verificar etiquetas `<label for>`, `aria-describedby`, `aria-invalid`, manejo de foco al fallar validación y ausencia de `<div (click)>`.
-6. **Ejecución real de pruebas:** Correr pruebas unitarias, build de producción y prueba E2E; registrar el resultado literal en el reporte.
+## 2. Checklist obligatoria
+1. **Spec:** cada `R-` y `AC-` → evidencia (archivo:línea + test). Sin evidencia = hallazgo.
+2. **Angular:** `grep -rnE "NgModule|\*ngIf|\*ngFor|: any\b|as any" frontend/src` vacío; `OnPush` en todo componente.
+3. **Seguridad (CRÍTICO):**
+   - `grep -rniE "bearer|api[_-]?token|STRAPI_.*(TOKEN|SECRET)|localhost:1337" frontend/src frontend/dist` vacío → si no, `BLOCKER`.
+   - `backend/src/index.ts`: Public solo `find` en las 3 colecciones; intento anónimo de `POST /api/form-fields` debe dar 403/405.
+   - Nginx no proxea `/admin`; CSP presente.
+4. **Cero hardcoding:** no hay labels de campos, planes, precios base, edad 18 ni rango de años literales en `frontend/src` (fuera de tests/fixtures).
+5. **Acoplamiento semántico:** precio, máscara y resumen usan `getFieldByRole`; renombrar un `key` en el seed no rompe tests.
+6. **Accesibilidad:** labels, `aria-describedby`, `aria-invalid`, foco al primer error, `aria-live`, ningún `(click)` en elementos no interactivos.
+7. **Plataforma:** imágenes sin secretos (`docker history`), usuario no root, healthchecks, CI con puertas reales.
+8. **Ejecución real:** unit, build, E2E (o motivo literal por el que no se pudo) y `trace-check`.
 
-## 3. Severidades y Cierre Trazable
-- **`BLOCKER`:** Impide aprobar (fallo de seguridad, regla de negocio rota, test fallido, crash).
-- **`MAJOR`:** Defecto funcional/UX/accesibilidad relevante que debe corregirse antes de QA.
-- **`MINOR`:** Mejora de legibilidad o mantenimiento.
-- Todo hallazgo corregido debe cerrarse indicando archivo modificado y test que prueba la corrección.
+## 3. Severidades y cierre
+- `BLOCKER`: seguridad, regla rota, test fallido, crash. `MAJOR`: defecto funcional/UX/a11y relevante. `MINOR`: mantenibilidad.
+- Cierre: `RESUELTO — commit <sha>, test <archivo › título>` o `ACEPTADO — decisión humana HITL-3 (<motivo>)`.
