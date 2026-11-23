@@ -9,7 +9,7 @@ En **Claude Code CLI** los mismos prompts funcionan anteponiendo `@<agente>` (la
 ## Fase 2 — Specs v2 (`@spec-analyst`)
 ```text
 Actúa como el subagente definido en .claude/agents/spec-analyst.md y aplica .claude/skills/spec-gap-checklist/SKILL.md.
-Entradas: docs/user-stories/US-0{1,2,3}.md, CLAUDE.md, docs/adrs/*, y las specs v1 en docs/specs/.
+Entradas (rutas exactas): docs/user-stories/US-01.md, docs/user-stories/US-02.md, docs/user-stories/US-03.md, CLAUDE.md, docs/adrs/ADR-001-multi-country-strategy.md, docs/adrs/ADR-002-docker-and-strapi-security.md, docs/adrs/ADR-003-cicd-and-free-tier-deploy.md, docs/specs/SPEC-US-0{1,2,3}.md.
 Reescribe docs/specs/SPEC-US-01.md, -02.md y -03.md al formato v2 (GAP/R/AC con IDs, matriz de verificación, Changelog vs v1).
 Marca como "DECISIÓN HUMANA REQUERIDA" los GAP que dependan de criterio de negocio. No escribas código. Termina con el Handoff.
 ```

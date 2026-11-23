@@ -37,6 +37,8 @@ Una sola aplicación front-end y un solo build que cotiza seguros de autos para 
 ## 5. Orquestación y Equipo
 La **sesión principal actúa como Orquestador**: no escribe código de aplicación; despacha subagentes, valida sus Handoffs, ejecuta `trace-check`, guarda los logs verbatim en `docs/logs/` y detiene el flujo en cada HITL.
 
+**Regla de despacho (aprendida en Fase 2, ver `docs/logs/02-*`):** todo prompt de despacho enumera las **rutas exactas** de cada entrada (nunca globs como `docs/adrs/*.md`), porque un subagente sin herramientas de listado no puede descubrirlas y termina trabajando sin contexto.
+
 | Subagente | Skill(s) | Escribe en | Fase |
 | :--- | :--- | :--- | :--- |
 | `@spec-analyst` | `spec-gap-checklist` | `docs/specs/SPEC-US-*.md` | 2 |
