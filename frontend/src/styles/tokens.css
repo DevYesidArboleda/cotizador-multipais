@@ -1,0 +1,84 @@
+/* Tokens de diseño de UI-UX-GUIDELINES §2.2 (HITL-2). No renombrar sin actualizar la guía ni design-tokens.spec.ts (T4). */
+:root {
+  color-scheme: light;
+
+  /* Superficies */
+  --color-bg:              #F6F4EF; /* fondo de página (papel) */
+  --color-surface:         #FFFFFF; /* tarjetas, campos, header */
+  --color-surface-sunken:  #E1DED6; /* skeleton, botón deshabilitado (no lleva texto de énfasis) */
+  --color-divider:         #D5D0C4; /* filetes decorativos (no identifican controles) */
+
+  /* Texto */
+  --color-text:            #1B2430; /* texto principal (tinta) */
+  --color-text-muted:      #4A5563; /* ayudas, metadatos, placeholder */
+  --color-text-disabled:   #5F6977; /* texto de botón deshabilitado */
+  --color-text-on-accent:  #FFFFFF; /* texto sobre acento y sobre tinta */
+
+  /* Acento (único) */
+  --color-accent:          #0B5C6B;
+  --color-accent-hover:    #08474F;
+  --color-accent-tint:     #E3F0F2; /* fondo del plan elegido, avisos informativos */
+
+  /* Bordes de controles (identifican el componente, >= 3:1) */
+  --color-border-control:  #6B7685;
+
+  /* Foco */
+  --color-focus:           #1E40AF;
+
+  /* Semánticos */
+  --color-danger:          #B3261E;
+  --color-danger-tint:     #FBE9E7;
+  --color-success:         #1E6B3A;
+  --color-success-tint:    #E4F3E8;
+  --color-warning-text:    #6B4A00;
+  --color-warning-border:  #8A5A00;
+  --color-warning-tint:    #FFF4D6;
+  --color-ink-badge:       #1B2430; /* insignia "Recomendado" y borde del recomendado */
+
+  /* Tipografía */
+  --font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-size-xs:   0.875rem;                          /* 14 px: ayudas, errores, metadatos (mínimo permitido) */
+  --font-size-base: 1rem;                              /* 16 px: cuerpo, campos (evita zoom automático en iOS) */
+  --font-size-lg:   1.125rem;
+  --font-size-h2:   1.25rem;
+  --font-size-h1:   clamp(1.5rem, 1.15rem + 1.4vw, 2.125rem);
+  --font-size-price: 1.75rem;
+  --line-height-base: 1.5;
+  --line-height-tight: 1.25;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-strong: 600;
+
+  /* Espaciado (rejilla de 4 px) */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
+  --space-4: 1rem;     --space-5: 1.5rem;   --space-6: 2rem;
+  --space-7: 3rem;     --space-8: 4rem;
+
+  /* Forma, bordes, sombra */
+  --radius-control: 0.5rem;   /* 8 px */
+  --radius-card:    0.75rem;  /* 12 px */
+  --radius-pill:    999px;
+  --border-width:        1px;
+  --border-width-strong: 2px;  /* error, recomendado */
+  --border-width-selected: 3px; /* plan elegido */
+  --shadow-card: 0 1px 2px rgba(27, 36, 48, 0.08);
+
+  /* Objetivos y foco */
+  --size-target-min: 2.75rem;  /* 44 px */
+  --size-button-height: 3rem;  /* 48 px */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+
+  /* Layout */
+  --container-max: 70rem;      /* 1120 px */
+  --form-max: 50rem;           /* 800 px */
+  --aside-width: 22.5rem;      /* 360 px, caja de pago (desktop) */
+
+  /* Movimiento */
+  --motion-fast: 120ms;
+  --motion-skeleton: 1600ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0.01ms; --motion-skeleton: 0.01ms; }
+}

@@ -1,0 +1,70 @@
+@import './styles/tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-padding: 1rem; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Regla de foco global (guía §2.2): única fuente, aplica a todos los interactivos */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+@media (forced-colors: active) { :focus-visible { outline-color: Highlight; } }
+
+h1, h2 { line-height: var(--line-height-tight); letter-spacing: -0.01em; font-weight: var(--font-weight-strong); margin: 0 0 var(--space-4); }
+h1 { font-size: var(--font-size-h1); scroll-margin-top: var(--space-5); }
+h2 { font-size: var(--font-size-h2); }
+h1:focus { outline: none; } /* h1 con tabindex=-1 solo recibe foco programático; el foco visible lo dibuja :focus-visible */
+h1:focus-visible { outline: var(--focus-ring-width) solid var(--color-focus); outline-offset: var(--focus-ring-offset); }
+
+a { color: var(--color-accent); }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+/* Botones (guía §2.5: 48 px de alto) */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--size-button-height); min-width: var(--size-target-min);
+  padding: 0 var(--space-5);
+  border: var(--border-width-strong) solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: var(--color-accent); color: var(--color-text-on-accent);
+  font: inherit; font-weight: var(--font-weight-strong); text-decoration: none; cursor: pointer;
+}
+.btn:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+.btn--secondary { background: var(--color-surface); color: var(--color-accent); }
+.btn--secondary:hover { background: var(--color-accent-tint); color: var(--color-accent-hover); }
+.btn:disabled { background: var(--color-surface-sunken); border-color: var(--color-surface-sunken); color: var(--color-text-disabled); cursor: not-allowed; }
+
+.container { max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-4); }
+@media (min-width: 768px) { .container { padding: 0 var(--space-5); } }
+@media (min-width: 1024px) { .container { padding: 0 var(--space-6); } }
+
+.card { background: var(--color-surface); border: var(--border-width) solid var(--color-divider); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-5); }
+
+/* Tarjetas de estado (error, config-error, vacío) */
+.state-card { border-left: 4px solid var(--color-accent); background: var(--color-accent-tint); border-radius: var(--radius-card); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); }
+.state-card--danger { border-left-color: var(--color-danger); background: var(--color-danger-tint); }
+.state-card__title { margin: 0 0 var(--space-2); font-size: var(--font-size-lg); font-weight: var(--font-weight-strong); }
+.state-card--danger .state-card__title { color: var(--color-danger); }
+.state-card p { margin: 0 0 var(--space-3); }
+.state-card code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: var(--font-weight-medium); }
+
+/* Skeleton: decorativo, exento de contraste (guía §5.1) */
+.skeleton { display: block; background: var(--color-surface-sunken); border-radius: var(--radius-control); animation: skeleton-pulse var(--motion-skeleton) ease-in-out infinite; }
+@keyframes skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
