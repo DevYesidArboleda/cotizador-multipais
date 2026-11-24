@@ -81,6 +81,7 @@ flowchart TD
 | 9 | **192 E2E en verde no detectaron un BLOCKER:** el pago se mezclaba entre países porque cada test arranca en una página nueva. Lo encontró `@qa-reviewer` (otro modelo) razonando sobre el estado singleton. | Log `11` (F-03.1) | Test de regresión del escenario exacto; lección: los E2E deben incluir escenarios de cambio de contexto en la misma sesión. |
 | 10 | `trace-check` habría puesto el CI en rojo al implementar la primera historia (exigía tests de las tres). | Commit `c5f724e` | Cobertura exigida **por spec en implementación**. |
 | 11 | En la pregunta de HITL-3 el Orquestador omitió un MINOR (F-01.2). | `docs/hitl/HITL-3-review.md` | Declarado en el registro e incluido en "Corregir todos". |
+| 12 | Primer CI remoto con el stack completo: E2E con Docker y Postgres **en verde**, pero el job de imágenes falló porque el Orquestador escribió `trivy-action@0.28.0` y la etiqueta real es `v0.28.0` (actionlint no valida que la versión exista). | Log `00c` (run 45318248703) | Acción fijada por **SHA** (`v0.36.0`); lección: fijar acciones de terceros por SHA y comprobarlas con `git ls-remote --tags`. |
 
 ### 3. ¿En qué puntos decidí NO usar IA y por qué?
 - **Decisiones de producto (HITL-1):** moneda en el plan, correcciones de negocio y tratamiento de E2E sin tokens son compromisos, no inferencias; el humano llegó a contradecir la recomendación del agente.
