@@ -31,13 +31,13 @@
     "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
-    "@types/node": "^22.20.5",
+    "@types/node": "^26.6.6",
     "angular-eslint": "22.8.0",
     "eslint": "^10.14.0",
     "jsdom": "^31.0.0",
     "prettier": "^3.8.1",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "8.72.2",
+    "typescript": "~7.0.2",
+    "typescript-eslint": "8.73.0",
     "vitest": "^5.0.0"
   }
 }
