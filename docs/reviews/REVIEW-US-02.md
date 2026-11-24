@@ -1,11 +1,11 @@
 # Code Review — US-02 (Listado y selección de planes)
 
 - **Fecha:** 2026-11-23
-- **Revisor:** `@qa-reviewer` (modelo: opus) + validación humana (HITL-3, pendiente)
+- **Revisor:** `@qa-reviewer` (modelo: opus; re-auditoría en sonnet, ver nota) + validación humana (HITL-3 parte 2, pendiente de firma)
 - **Alcance:** commits `5158d5b..3c331af` (HEAD `3c331af`, árbol de trabajo limpio)
 - **Trazabilidad:** `US-02` → `SPEC-US-02 v3 (Aprobado)` → `ADR-001`, `ADR-002` → código → tests
 - **Resultado inicial:** `CAMBIOS REQUERIDOS`
-- **Resultado final:** `PENDIENTE` (hasta re-auditoría y HITL-3)
+- **Resultado final:** `APROBADO` — 3/3 hallazgos RESUELTOS (F-02.1 `MAJOR` incluido: el primer Tab llega a "Continuar al resumen", AC-02.13). Sujeto a la verificación manual y firma humana de HITL-3 parte 2.
 
 ## Ejecución real de la suite
 | Comando | Resultado literal |
@@ -86,9 +86,9 @@
 ## Hallazgos
 | ID | Severidad | Archivo / Línea | Regla afectada | Descripción | Acción correctiva | Estado y evidencia |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **F-02.1** | `MAJOR` | `frontend/src/app/features/step-2/step-2.component.ts:105-116`; `frontend/e2e/us-02-a11y.spec.ts:40-44` | AC-02.13, R-02.18, CLAUDE regla 7 | AC-02.13 (aprobado): "al presionar Tab llego a 'Continuar al resumen' habilitado". En el DOM el enlace "Volver" precede al botón, así que el primer `Tab` desde el grupo de radios cae en "Volver" y hace falta un segundo `Tab`. El test que cita `[AC-02.13]` fue escrito para la implementación (dos `Tab`, comentario en la línea 40), así que certifica un comportamiento distinto del aprobado: la matriz de trazabilidad marca AC-02.13 como cubierto sin que se cumpla. | Opción A (recomendada): mover "Volver" fuera de la barra de acciones (p. ej. enlace "Volver al formulario" sobre el grupo de planes, como en el estado vacío) para que el siguiente elemento enfocable tras el grupo sea "Continuar al resumen", conservando orden DOM = orden visual (WCAG 2.4.3); ajustar el E2E a un solo `Tab`. Opción B: enmendar AC-02.13 en HITL-3 ("Tab hasta Continuar, pasando por Volver"). | `ABIERTO` |
-| **F-02.2** | `MINOR` | `frontend/src/app/features/step-2/step-2.component.ts:45-63` | R-02.18 | Las insignias "Recomendado" y "Elegido" están dentro del `<label>` del radio, por lo que forman parte de su nombre accesible ("Plus Recomendado Elegido") y "Recomendado" se repite en la descripción (`aria-describedby` → `plan-badge-*`). "Elegido" duplica el estado `checked` que ya anuncia el lector. axe no lo detecta (no es violación), pero el anuncio es redundante. | Sacar las insignias del `<label>` (o `aria-hidden="true"` en "Elegido") y dejar "Recomendado" solo en `aria-describedby`; test `[R-02.18] nombre accesible del radio = nombre del plan`. | `ABIERTO` |
-| **F-02.3** | `MINOR` | `frontend/src/app/core/guards/step-guards.ts:62-66` | R-02.12, R-03.1 | `decideStepAccess` devuelve `notice: 'plan-unavailable'`, pero el guard la descarta (solo usa `decision.to`). Hoy funciona porque el Paso 2 recalcula el aviso al no encontrar el plan, así que el campo `notice` de la decisión es código muerto que sugiere un contrato que no existe. | Eliminar `notice` de `StepAccessDecision` o propagarlo (p. ej. `queryParams` o estado del store) y cubrirlo con un test. | `ABIERTO` |
+| **F-02.1** | `MAJOR` | `frontend/src/app/features/step-2/step-2.component.ts:105-116`; `frontend/e2e/us-02-a11y.spec.ts:40-44` | AC-02.13, R-02.18, CLAUDE regla 7 | AC-02.13 (aprobado): "al presionar Tab llego a 'Continuar al resumen' habilitado". En el DOM el enlace "Volver" precede al botón, así que el primer `Tab` desde el grupo de radios cae en "Volver" y hace falta un segundo `Tab`. El test que cita `[AC-02.13]` fue escrito para la implementación (dos `Tab`, comentario en la línea 40), así que certifica un comportamiento distinto del aprobado: la matriz de trazabilidad marca AC-02.13 como cubierto sin que se cumpla. | Opción A (recomendada): mover "Volver" fuera de la barra de acciones (p. ej. enlace "Volver al formulario" sobre el grupo de planes, como en el estado vacío) para que el siguiente elemento enfocable tras el grupo sea "Continuar al resumen", conservando orden DOM = orden visual (WCAG 2.4.3); ajustar el E2E a un solo `Tab`. Opción B: enmendar AC-02.13 en HITL-3 ("Tab hasta Continuar, pasando por Volver"). | RESUELTO — commit a246e40, test `frontend/e2e/us-02-a11y.spec.ts › @strapi [F-02.1][R-02.18][AC-02.13] solo con teclado: …Tab hasta "Continuar al resumen"` (un solo Tab) y `[F-02.1][AC-02.13] "Volver" va antes del grupo de planes` |
+| **F-02.2** | `MINOR` | `frontend/src/app/features/step-2/step-2.component.ts:45-63` | R-02.18 | Las insignias "Recomendado" y "Elegido" están dentro del `<label>` del radio, por lo que forman parte de su nombre accesible ("Plus Recomendado Elegido") y "Recomendado" se repite en la descripción (`aria-describedby` → `plan-badge-*`). "Elegido" duplica el estado `checked` que ya anuncia el lector. axe no lo detecta (no es violación), pero el anuncio es redundante. | Sacar las insignias del `<label>` (o `aria-hidden="true"` en "Elegido") y dejar "Recomendado" solo en `aria-describedby`; test `[R-02.18] nombre accesible del radio = nombre del plan`. | RESUELTO — commit a246e40, test `frontend/e2e/us-02-a11y.spec.ts › @strapi [F-02.2][R-02.18] el nombre accesible del radio es el nombre del plan…` |
+| **F-02.3** | `MINOR` | `frontend/src/app/core/guards/step-guards.ts:62-66` | R-02.12, R-03.1 | `decideStepAccess` devuelve `notice: 'plan-unavailable'`, pero el guard la descarta (solo usa `decision.to`). Hoy funciona porque el Paso 2 recalcula el aviso al no encontrar el plan, así que el campo `notice` de la decisión es código muerto que sugiere un contrato que no existe. | Eliminar `notice` de `StepAccessDecision` o propagarlo (p. ej. `queryParams` o estado del store) y cubrirlo con un test. | RESUELTO — commit a246e40, test `frontend/src/app/core/quote/quote.store.spec.ts › [F-02.3][R-02.12] el aviso se consume una sola vez` (+ `us-03-plan-changes › [R-03.1][AC-03.11]`) |
 
 ## Verificación manual pendiente (HITL-3)
 - R-02.24 / AC-02.19 / AC-02.26: reordenar y desactivar planes y cambiar el ajuste de "Cali" de +3 a +6 en el admin, y recargar el Paso 2.
@@ -96,3 +96,37 @@
 ## Intervención humana (HITL-3)
 - **Decisión:** pendiente. El humano debe, por cada hallazgo `BLOCKER`/`MAJOR`, exigir la corrección (cierre `RESUELTO — commit <sha>, test <archivo › título>`) o aceptarlo con motivo (`ACEPTADO — decisión humana HITL-3 (<motivo>)`).
 - F-02.1 (`MAJOR`) bloquea `trace-check` hasta que se corrija o se acepte con enmienda de AC-02.13.
+
+## Re-auditoría (2026-11-23, modelo sonnet por límite de uso de opus)
+- **Commit auditado:** `a246e40` (base de la review: `722ee49`; decisiones humanas: `docs/hitl/HITL-3-review.md`).
+- **Nota de modelo:** Modelo: la re-auditoría corre en `sonnet` (no `opus`) por límite de uso del modelo opus, por decisión humana; se pierde parte de la independencia respecto de los implementadores (también `sonnet`) y se compensa verificando todo con ejecución real, reproduciendo cada escenario con sondas propias y sin aceptar los Handoffs.
+
+### Ejecución real
+| Comando (re-auditoría) | Resultado literal |
+| :--- | :--- |
+| `npm run build` (backend, `NODE_ENV=production`) | "✔ Building build context (126ms)" · "✔ Building admin panel (21963ms)" |
+| Arranque 1 Strapi (SQLite en `/tmp`, `SEED_ON_BOOT=true`, secretos y admin ficticios por env) | "[security] Permisos Public: 3 concedidos, 8 revocados (solo find en 3 tipos)." · "[seed] Creados: 2 paises, 25 campos, 8 planes (un pais existente no se vuelve a sembrar)." |
+| `npm run lint` (frontend) | "All files pass linting." |
+| `npm test -- --watch=false` | "Test Files  40 passed (40)" · "Tests  365 passed (365)" |
+| `npm run build -- --configuration production` | "Initial total \| 307.67 kB \| 83.48 kB" · "Application bundle generation complete." |
+| `grep -rnE "NgModule\|\*ngIf\|\*ngFor\|: any\b\|as any" frontend/src` | vacío |
+| `grep -rniE "bearer\|api[_-]?token\|STRAPI_.*(TOKEN\|SECRET)\|localhost:1337\|authorization" frontend/src frontend/dist` | solo 5 líneas en `*.spec.ts` (tests que afirman la AUSENCIA de la cabecera); 0 en `frontend/dist` |
+| `SMOKE_BUNDLE_DIR=frontend/dist/frontend/browser node scripts/security-smoke.mjs` (proxy `ng serve` :4200 + Strapi :1337) | "PASS  [9] Bundle …/frontend/dist/frontend/browser sin Bearer/api_token/STRAPI_*TOKEN/Authorization" · "SKIP  [10] … gitleaks" · "Resumen: 18 PASS, 0 FAIL, 1 SKIP" · "security-smoke: OK" |
+| `node scripts/security-smoke.selftest.mjs` | "OK   bundle-con-token: exit=1 (esperado 1) FAIL en [9]: true" · "selftest: el smoke detecta cada vulnerabilidad simulada" |
+| `npx playwright test e2e/us-03-a11y.spec.ts e2e/full-flow-co.spec.ts --repeat-each=12 --workers=2` | "108 passed (2.6m)" (9 tests × 12, 0 fallos) |
+| `npx playwright test` (E2E completo, Strapi real + `ng serve`) | "200 passed (4.0m)" |
+| `npx playwright test --grep @strapi --list \| tail -1` · `--grep-invert @strapi` · sin filtro | "Total: 127 tests in 12 files" · "Total: 73 tests in 11 files" · "Total: 200 tests in 17 files" (los 73 sin etiqueta están en los 11 archivos que usan `mockStrapi`; intersección con archivos sin `mockStrapi`: vacía) |
+| `docker compose config -q` (base y con `docker-compose.postgres.yml`) · `grep -rn hashFiles .github \| wc -l` | `base-ok` · `pg-ok` · `0` |
+| `node scripts/trace-check.mjs --write` y `node scripts/trace-check.mjs` | "✔ docs/TRACEABILITY.md regenerado" · "trace-check: 3 specs · 167 IDs · 57 archivos de test · 21 hallazgos" · "trace-check OK" (exit 0) |
+
+### Reproducciones independientes
+- **F-03.1** (sonda propia, no el E2E del implementador; reutiliza solo los helpers de formulario): "CO confirmación: Tu cotización COT-CO-20261123-5BBB fue confirmada." → header → Chile sin recarga → Rechazado → "rechazo tras 1336 ms; URL http://127.0.0.1:4200/cl/quote/step-3" · "auto_quote_v1_cl contiene confirmation: false | contiene número CO: false" · "body contiene número CO: false". Antes del fix: "confirmation (41 ms)" con el número de CO persistido; ahora hay simulación (≈1,3 s), alerta de rechazo y ningún número de CO.
+- **F-PL.2** (admin ficticio creado por `STRAPI_ADMIN_EMAIL/PASSWORD`, `content-manager` con el JWT de admin): antes → "campos CO 13 | phone presente: true", "planes CO 4 [basico, plus, premium, legado]"; cambios → renombrar `premium`→`premium-2027` "Premium 2027" (PUT 200 + publish 200) y borrar `phone` (DELETE 200) → "campos CO 12 | phone presente: False"; reinicio (proceso anterior detenido y puerto comprobado libre) → "[security] Permisos Public: 0 concedidos, 0 revocados" · "[seed] Creados: 0 paises, 0 campos, 0 planes (un pais existente no se vuelve a sembrar)." → "campos CO 12 | phone presente: false" · "planes CO 4 [basico, plus, legado, premium-2027]" · "campos CL 12 paises 2". Sin duplicados ni reaparición. (Primer intento de publicar con una URL equivocada dio 400; corregido el script, no el sistema.)
+- La BD temporal se recreó desde cero antes de los E2E (para no heredar los cambios de negocio de la prueba). Al terminar se detuvieron solo mis procesos (Strapi :1337 y `ng serve` :4200) y se eliminaron `frontend/dist`, `.angular`, `test-results`, `playwright-report`, la BD en `/tmp` y `backend/.tmp`.
+
+### Cierre de hallazgos de este reporte
+| Hallazgo | Sev. | Estado | Evidencia |
+| :--- | :--- | :--- | :--- |
+| `F-02.1` | MAJOR | RESUELTO | `us-02-a11y.spec.ts › @strapi [F-02.1][R-02.18][AC-02.13] solo con teclado…` (un solo Tab) y `[F-02.1][AC-02.13] "Volver" va antes del grupo de planes: h1, Volver, radios`; orden DOM = orden visual |
+| `F-02.2` | MINOR | RESUELTO | `us-02-a11y.spec.ts › @strapi [F-02.2][R-02.18]…` |
+| `F-02.3` | MINOR | RESUELTO | `quote.store.spec.ts › [F-02.3][R-02.12] el aviso se consume una sola vez` |
