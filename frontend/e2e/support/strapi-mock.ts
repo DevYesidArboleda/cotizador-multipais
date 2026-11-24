@@ -16,6 +16,9 @@ export interface CountryMock {
   plansDelayMs?: number;
   plansStatus?: number;
   plansTotal?: number;
+  /** Latencia y estado forzados de `GET /api/countries?filters[code]` (términos del Paso 3). */
+  countryDelayMs?: number;
+  countryStatus?: number;
 }
 
 export interface StrapiMock {
@@ -47,6 +50,10 @@ export async function mockStrapi(page: Page, mock: StrapiMock = defaultMock()): 
       const code = url.searchParams.get('filters[code][$eq]');
       if (code !== null) {
         const found = mock.countries.get(code);
+        if (found?.countryDelayMs) await new Promise((resolve) => setTimeout(resolve, found.countryDelayMs));
+        if (found?.countryStatus && found.countryStatus >= 400) {
+          return json(found.countryStatus, { data: null, error: { status: found.countryStatus, name: 'InternalServerError', message: 'simulado' } });
+        }
         return json(200, { data: found ? [found.country] : [], meta: { pagination: page1(found ? 1 : 0) } });
       }
       const list = [...mock.countries.values()].map((c) => ({ id: c.country.id, documentId: c.country.documentId, code: c.country.code, name: c.country.name }));

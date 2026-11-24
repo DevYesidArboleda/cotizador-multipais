@@ -49,3 +49,17 @@ describe('[R-02.20] catálogo del Paso 2', () => {
     expect(describeConfigIssue({ code: 'plan-currency-mismatch', planDocumentId: 'd', planName: 'P', planCurrency: 'CLP', countryCurrency: 'COP' })).toContain('CLP');
   });
 });
+
+describe('[R-03.22] catálogo del Paso 3 y la confirmación', () => {
+  it('[R-03.22] contiene los textos de resumen, términos, pago, simulación y confirmación', () => {
+    for (const key of ['summary.section.policyholder', 'terms.accept', 'pay.help.terms', 'pay.rejected.body', 'simulation.legend', 'button.pay', 'button.pay.processing', 'button.newQuote', 'confirmation.announce', 'confirmation.simulationNote', 'link.changePlan'] as const) {
+      expect(t(key).length).toBeGreaterThan(0);
+    }
+    expect(t('simulation.legend')).toBe('Simulación de pago (solo pruebas)');
+    expect(t('confirmation.announce', { numero: 'COT-CO-20261123-7B2E' })).toBe('Tu cotización COT-CO-20261123-7B2E fue confirmada.');
+  });
+
+  it('[R-03.22] el error de términos vacíos y de moneda salen del catálogo', () => {
+    expect(describeConfigIssue({ code: 'empty-terms' })).toBe(t('config.terms.empty'));
+  });
+});

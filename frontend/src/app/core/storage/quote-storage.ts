@@ -102,3 +102,13 @@ export function pickStep1Values(values: Step1Values, validIds: readonly string[]
   }
   return picked;
 }
+
+/** Elimina SOLO la clave del país indicado (R-03.15); un fallo del almacenamiento no lanza. */
+export function clearQuoteState(storage: Storage | null, countryCode: string): void {
+  if (!storage) return;
+  try {
+    storage.removeItem(quoteStorageKey(countryCode));
+  } catch {
+    // Sin acceso al almacenamiento: nada que borrar.
+  }
+}

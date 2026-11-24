@@ -1,5 +1,5 @@
 import { QUOTE_SCHEMA_VERSION } from '../contracts/strapi-contracts';
-import { emptyQuoteState, parseQuoteState, pickStep1Values, quoteStorageKey, readQuoteState, writeQuoteState } from './quote-storage';
+import { clearQuoteState, emptyQuoteState, parseQuoteState, pickStep1Values, quoteStorageKey, readQuoteState, writeQuoteState } from './quote-storage';
 
 class FakeStorage implements Storage {
   readonly data = new Map<string, string>();
@@ -88,5 +88,33 @@ describe('[R-02.16][R-02.17] selección de plan en el almacenamiento por país',
   it('[R-02.16] una selección malformada se descarta sin tocar el Paso 1', () => {
     const raw = JSON.stringify({ schemaVersion: 1, step1: { a: 'x' }, selectedPlan: { planDocumentId: 3 } });
     expect(parseQuoteState(raw)).toEqual({ schemaVersion: 1, step1: { a: 'x' } });
+  });
+});
+
+describe('[R-03.15][R-03.19] borrado y aislamiento por país', () => {
+  it('[R-03.15] clearQuoteState elimina SOLO la clave del país indicado', () => {
+    const storage = new FakeStorage();
+    writeQuoteState(storage, 'co', { ...emptyQuoteState(), step1: { a: 'x' } });
+    writeQuoteState(storage, 'cl', { ...emptyQuoteState(), step1: { b: 'y' } });
+    clearQuoteState(storage, 'co');
+    expect(storage.data.has('auto_quote_v1_co')).toBe(false);
+    expect(readQuoteState(storage, 'cl').step1).toEqual({ b: 'y' });
+  });
+
+  it('[R-03.15] sin almacenamiento o con removeItem que lanza no hay excepción', () => {
+    expect(() => clearQuoteState(null, 'co')).not.toThrow();
+    const broken = new FakeStorage();
+    broken.removeItem = () => { throw new Error('bloqueado'); };
+    expect(() => clearQuoteState(broken, 'co')).not.toThrow();
+  });
+
+  it('[R-03.19] la confirmación de un país no aparece al leer el otro', () => {
+    const storage = new FakeStorage();
+    writeQuoteState(storage, 'co', {
+      ...emptyQuoteState(),
+      confirmation: { quoteNumber: 'COT-CO-20261123-7B2E', planDocumentId: 'p', planName: 'Plus', finalPrice: 1, paidAt: '2026-11-23T10:00:00.000Z' },
+    });
+    expect(readQuoteState(storage, 'cl').confirmation).toBeUndefined();
+    expect(readQuoteState(storage, 'co').confirmation?.quoteNumber).toBe('COT-CO-20261123-7B2E');
   });
 });

@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
-import type { QuoteState, SelectedPlan, Step1Values } from '../contracts/strapi-contracts';
-import { emptyQuoteState, readQuoteState, SESSION_STORAGE, writeQuoteState } from '../storage/quote-storage';
+import type { QuoteConfirmation, QuoteState, SelectedPlan, Step1Values } from '../contracts/strapi-contracts';
+import { clearQuoteState, emptyQuoteState, readQuoteState, SESSION_STORAGE, writeQuoteState } from '../storage/quote-storage';
 
 interface Slot {
   country: string | null;
@@ -56,6 +56,18 @@ export class QuoteStore {
       delete next.selectedPlan;
       return { ...s, state: next, persist: true };
     });
+  }
+
+  /** Guarda la confirmación tras un pago aprobado (R-03.14). */
+  setConfirmation(confirmation: QuoteConfirmation): void {
+    this.slot.update((s) => ({ ...s, state: { ...s.state, confirmation }, persist: true }));
+  }
+
+  /** "Nueva cotización": borra SOLO la clave del país activo y deja el estado vacío sin reescribirlo (R-03.15). */
+  reset(): void {
+    const current = untracked(this.slot);
+    if (current.country) clearQuoteState(this.storage, current.country);
+    this.slot.set({ country: current.country, state: emptyQuoteState(), persist: false });
   }
 
   setPendingTouch(ids: readonly string[]): void {

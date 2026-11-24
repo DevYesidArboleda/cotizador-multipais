@@ -124,3 +124,29 @@ describe('[R-02.11][R-02.16][R-02.17] selección de plan en el QuoteState', () =
     expect(storage.data.has('auto_quote_v1_cl')).toBe(false);
   });
 });
+
+describe('[R-03.14][R-03.15] confirmación y nueva cotización', () => {
+  const confirmation = { quoteNumber: 'COT-CO-20261123-7B2E', planDocumentId: 'p1', planName: 'Plus', finalPrice: 10, paidAt: '2026-11-23T10:00:00.000Z' };
+
+  it('[R-03.14] setConfirmation persiste la confirmación junto al Paso 1', () => {
+    const { storage, store } = setup();
+    store.activate('co');
+    store.setStep1Values({ 'doc-a': 'x' });
+    store.setConfirmation(confirmation);
+    TestBed.tick();
+    expect(JSON.parse(storage.data.get('auto_quote_v1_co') ?? '{}').confirmation).toEqual(confirmation);
+  });
+
+  it('[R-03.15] reset borra solo la clave del país activo y deja el estado vacío sin reescribirlo', () => {
+    const { storage, store } = setup({ auto_quote_v1_cl: JSON.stringify({ schemaVersion: 1, step1: { b: 'y' } }) });
+    store.activate('co');
+    store.setStep1Values({ 'doc-a': 'x' });
+    store.setConfirmation(confirmation);
+    TestBed.tick();
+    store.reset();
+    TestBed.tick();
+    expect(storage.data.has('auto_quote_v1_co')).toBe(false);
+    expect(storage.data.has('auto_quote_v1_cl')).toBe(true);
+    expect(store.state()).toEqual({ schemaVersion: 1, step1: {} });
+  });
+});

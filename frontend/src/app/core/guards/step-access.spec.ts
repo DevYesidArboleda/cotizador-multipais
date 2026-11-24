@@ -52,3 +52,38 @@ describe('[R-02.1][R-02.12] acceso al Paso 3 con planes activos', () => {
     expect(decideStepAccess('step-3', context({ state, activePlanDocumentIds: new Set(['p1']) }))).toEqual({ kind: 'allow' });
   });
 });
+
+describe('[R-03.1][R-03.14] orden de decisiones y confirmación', () => {
+  const confirmed = {
+    ...emptyQuoteState(),
+    selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 10 },
+    confirmation: { quoteNumber: 'COT-CO-20261123-7B2E', planDocumentId: 'p1', planName: 'Plus', finalPrice: 10, paidAt: '2026-11-23T10:00:00.000Z' },
+  };
+
+  it.each(['step-1', 'step-2', 'step-3'] as const)('[R-03.14] con confirmación, %s redirige a /confirmation', (target) => {
+    expect(decideStepAccess(target, context({ state: confirmed }))).toEqual({
+      kind: 'redirect', to: 'confirmation', touchFieldDocumentIds: [], notice: null,
+    });
+  });
+
+  it('[R-03.14] con confirmación, /confirmation permite la entrada incluso con errores del Paso 1', () => {
+    expect(decideStepAccess('confirmation', context({ state: confirmed, step1Errors: [error('a')] }))).toEqual({ kind: 'allow' });
+  });
+
+  it('[R-03.1] la confirmación tiene prioridad sobre los errores del Paso 1', () => {
+    expect(decideStepAccess('step-3', context({ state: confirmed, step1Errors: [error('a')] }))).toMatchObject({ to: 'confirmation' });
+  });
+
+  it('[R-03.1] sin confirmación: errores del Paso 1 -> step-1; sin plan -> step-2; plan retirado -> step-2 con aviso', () => {
+    const withPlan = { ...emptyQuoteState(), selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 10 } };
+    expect(decideStepAccess('step-3', context({ state: withPlan, step1Errors: [error('a')] }))).toMatchObject({ to: 'step-1', touchFieldDocumentIds: ['a'] });
+    expect(decideStepAccess('step-3', context())).toMatchObject({ to: 'step-2', notice: null });
+    expect(decideStepAccess('step-3', context({ state: withPlan, activePlanDocumentIds: new Set() }))).toMatchObject({ to: 'step-2', notice: 'plan-unavailable' });
+  });
+
+  it('[R-03.1] sin confirmación, /confirmation vuelve al paso pendiente (Paso 3 si todo está listo)', () => {
+    const withPlan = { ...emptyQuoteState(), selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 10 } };
+    expect(decideStepAccess('confirmation', context({ state: withPlan, activePlanDocumentIds: new Set(['p1']) }))).toMatchObject({ to: 'step-3' });
+    expect(decideStepAccess('confirmation', context())).toMatchObject({ to: 'step-2' });
+  });
+});

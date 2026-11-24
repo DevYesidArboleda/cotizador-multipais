@@ -30,6 +30,14 @@ export const countryGuard: CanActivateFn = (route, state) => {
   }
 };
 
+/** Paso 1: con `confirmation` presente redirige a /confirmation hasta "Nueva cotización" (R-03.14). Sin red. */
+export const step1Guard: CanActivateFn = (route) => {
+  const code = route.paramMap.get('country') ?? '';
+  const quote = inject(QuoteStore);
+  quote.activate(code);
+  return quote.state().confirmation ? inject(Router).createUrlTree(['/', code, 'quote', 'confirmation']) : true;
+};
+
 /** Guard común de Paso 2, Paso 3 y confirmación: revalida el Paso 1 con la configuración vigente (R-01.10). */
 function stepGuard(target: Exclude<QuoteStep, 'step-1'>): CanActivateFn {
   return (route) => {
@@ -40,6 +48,8 @@ function stepGuard(target: Exclude<QuoteStep, 'step-1'>): CanActivateFn {
     const code = route.paramMap.get('country') ?? '';
     quote.activate(code);
     const redirect = (to: QuoteStep): UrlTree => router.createUrlTree(['/', code, 'quote', to]);
+    // R-03.14: con confirmación persistida solo existe /confirmation (sin red); sin ella, /confirmation sigue el orden común.
+    if (quote.state().confirmation) return target === 'confirmation' ? true : redirect('confirmation');
     // R-02.24: la configuración de campos se refetchea al entrar al Paso 2 (incluida la recarga).
     return countryStore.loadConfig(code, target === 'step-2').pipe(
       switchMap((result): Observable<boolean | UrlTree> => {
@@ -61,7 +71,7 @@ function stepGuard(target: Exclude<QuoteStep, 'step-1'>): CanActivateFn {
           map((plans) => {
             if (plans.kind === 'ok') return decide(new Set(plans.plans.map((p) => p.documentId)));
             if (plans.kind === 'empty') return decide(new Set<string>());
-            if (plans.kind === 'config-error') return redirect('step-2');
+            // config-error de moneda/ciudad: el Paso 3 lo presenta con el pago bloqueado (R-03.25).
             return decide(null);
           }),
         );

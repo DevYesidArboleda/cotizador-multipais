@@ -113,3 +113,37 @@ export async function choosePlan(page: Page, name: string, country = 'co'): Prom
     .poll(() => page.evaluate((key) => sessionStorage.getItem(key) ?? '', `auto_quote_v1_${country}`))
     .toContain('selectedPlan');
 }
+
+export const payButton = (page: Page): Locator => page.getByRole('button', { name: /^(Pagar|Procesando pago)/ });
+export const acceptTerms = (page: Page): Locator => page.getByLabel('Acepto los términos y condiciones');
+export const simulationRadio = (page: Page, name: 'Aprobado' | 'Rechazado'): Locator => page.getByRole('radio', { name });
+export const QUOTE_NUMBER = /COT-[A-Z]{2}-\d{8}-[0-9A-F]{4}/;
+
+/** Del Paso 2 al Paso 3 eligiendo un plan (el resumen exige plan elegido). */
+export async function continueToStep3(page: Page, plan = 'Plus', country = 'co'): Promise<void> {
+  await choosePlan(page, plan, country);
+  await continueButton(page).click();
+  await expect(page).toHaveURL(new RegExp(`/${country}/quote/step-3$`));
+  await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu cotización' })).toBeVisible();
+  await expect(payButton(page)).toBeVisible();
+}
+
+/** Flujo de Colombia hasta el resumen. */
+export async function goToStep3(page: Page, overrides: CoValues = {}, plan = 'Plus'): Promise<void> {
+  await goToStep2(page, overrides);
+  await continueToStep3(page, plan);
+}
+
+/** Cuenta las llamadas a `crypto.getRandomValues(2 bytes)`: una por cada simulación de pago aprobada. */
+export async function countQuoteNumbers(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __quoteDraws: number };
+    w.__quoteDraws = 0;
+    const original = crypto.getRandomValues.bind(crypto);
+    crypto.getRandomValues = ((array: ArrayBufferView) => {
+      if (array.byteLength === 2) w.__quoteDraws += 1;
+      return original(array as Uint8Array<ArrayBuffer>);
+    }) as typeof crypto.getRandomValues;
+  });
+}
+export const quoteDraws = (page: Page): Promise<number> => page.evaluate(() => (window as unknown as { __quoteDraws: number }).__quoteDraws);

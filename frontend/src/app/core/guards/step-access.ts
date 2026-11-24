@@ -9,16 +9,17 @@ const toStep1 = (context: StepAccessContext): StepAccessDecision => ({
 
 /**
  * Decisión pura de acceso (R-01.10): el Paso 2 y 3 revalidan el Paso 1 contra la configuración vigente; no existe
- * flag de "Paso 1 completo". El orden del Paso 3 y la confirmación se completa en SPEC-US-02/03.
+ * flag de "Paso 1 completo". Orden del Paso 3 (R-03.1): confirmación -> Paso 1 -> plan -> planes activos.
  */
 export function decideStepAccess(target: QuoteStep, context: StepAccessContext): StepAccessDecision {
   const { state, step1Errors, activePlanDocumentIds } = context;
-  if (target === 'step-1') return { kind: 'allow' };
-  if (target === 'confirmation') {
-    if (state.confirmation) return { kind: 'allow' };
-  } else if (target === 'step-3' && state.confirmation) {
-    return { kind: 'redirect', to: 'confirmation', touchFieldDocumentIds: [], notice: null };
+  // R-03.14: con confirmación presente solo se puede ver /confirmation.
+  if (state.confirmation) {
+    return target === 'confirmation'
+      ? { kind: 'allow' }
+      : { kind: 'redirect', to: 'confirmation', touchFieldDocumentIds: [], notice: null };
   }
+  if (target === 'step-1') return { kind: 'allow' };
   if (step1Errors.length > 0) return toStep1(context);
   if (target === 'step-2') return { kind: 'allow' };
   const plan = state.selectedPlan;
