@@ -88,7 +88,7 @@ for (const file of reviewFiles) {
     const state = cells.at(-1) ?? '';
     const closed = /RESUELTO|ACEPTADO/i.test(state);
     findings.push({ id: m[1], severity: m[2], file: rel(file), state, closed });
-    for (const idm of m[3].matchAll(idInText)) ids.get(idm[1])?.findings.push(m[1]);
+    for (const idm of m[3].matchAll(idInText)) { const f = ids.get(idm[1])?.findings; if (f && !f.includes(m[1])) f.push(m[1]); }
     if (!closed && m[2] !== 'MINOR') errors.push(`${m[1]} (${m[2]}) en ${rel(file)} no está RESUELTO ni ACEPTADO.`);
   }
 }
