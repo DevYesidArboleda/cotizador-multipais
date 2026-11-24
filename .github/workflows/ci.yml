@@ -59,7 +59,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Ningún token de Strapi en el frontend
         run: |
-          if [ -d frontend/src ] && grep -rniE "bearer |api[_-]?token|STRAPI_[A-Z_]*(TOKEN|SECRET)|localhost:1337" frontend/src --include=*.ts --include=*.html; then
+          if [ -d frontend/src ] && grep -rniE "bearer |api[_-]?token|STRAPI_[A-Z_]*(TOKEN|SECRET)|localhost:1337|Authorization" frontend/src --include=*.ts --include=*.html --exclude='*.spec.ts' --exclude-dir=testing; then
             echo "::error::Se encontró un posible token o URL directa de Strapi en frontend/src"; exit 1
           fi
 
@@ -84,7 +84,7 @@ jobs:
       - run: npm run build -- --configuration production
       - name: Bundle sin secretos
         run: |
-          if grep -rniE "bearer |api[_-]?token|localhost:1337" dist/; then
+          if grep -rniE "bearer |api[_-]?token|STRAPI_[A-Z_]*(TOKEN|SECRET)|localhost:1337|Authorization" dist/; then
             echo "::error::El bundle contiene un posible secreto o URL directa de Strapi"; exit 1
           fi
 
@@ -135,7 +135,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-          npx playwright test
+          npx playwright test --fail-on-flaky-tests
         env:
           E2E_BASE_URL: http://localhost:4200
       - uses: actions/upload-artifact@v4
@@ -188,7 +188,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-          npx playwright test --grep @strapi
+          npx playwright test --grep @strapi --fail-on-flaky-tests
         env:
           E2E_BASE_URL: http://localhost:4200
       - uses: actions/upload-artifact@v4

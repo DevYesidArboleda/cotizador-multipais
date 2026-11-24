@@ -189,10 +189,10 @@
 | F-PL.4 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | RESUELTO — commit a246e40, test `.github/workflows/ci.yml:185-191` (`npx playwright test --grep @strapi` en `e2e-postgres`); `--grep @strapi --list` → "Total: 127 tests in 12 files" y `--grep-invert` → 73 (todos E2E-M). **No verificado en remoto** (primera ejecución del job pendiente) |
 | F-PL.5 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | RESUELTO — commit a246e40, test `docker-compose.yml:26` (`"127.0.0.1:1337:1337"`); `docker compose config -q` (base y con override Postgres) OK. Bind real no verificado con `up` |
 | F-PL.6 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | RESUELTO — commit a246e40, test `frontend/e2e/platform-contract.spec.ts › @strapi [F-PL.6][R-02.5] co/cl: la respuesta pública expone locale (es-CO / es-CL) y no localeCode`. La observación (a) (`locale: null` en listas parciales) queda sin cambio por ser inocua |
-| F-PL.7 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | `ABIERTO` |
-| F-PL.8 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | `ABIERTO` |
-| F-PL.9 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | `ABIERTO` |
-| F-PL.10 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | `ABIERTO` |
+| F-PL.7 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | ACEPTADO — HITL-3 parte 2 (decisión humana: riesgo aceptado; recuperación documentada en README y skill: borrar el país en el admin y reiniciar) |
+| F-PL.8 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | ACEPTADO — HITL-3 parte 2 (decisión humana: el comportamiento queda cubierto por las reproducciones manuales de logs 13 y 15) |
+| F-PL.9 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | RESUELTO — commit (ronda HITL-3 parte 2), `ci.yml:138,191` `--fail-on-flaky-tests`; soporte verificado `npx playwright test --help` (Playwright 1.65.1); log 16 |
+| F-PL.10 | MINOR | `docs/reviews/REVIEW-PLATFORM.md` | RESUELTO — commit (ronda HITL-3 parte 2), `ci.yml:62,87` incluyen `Authorization` (src excluye *.spec.ts y testing/); grep del workflow sobre src y dist → 0 coincidencias; log 16 |
 | F-01.1 | MINOR | `docs/reviews/REVIEW-US-01.md` | ACEPTADO — HITL-3 (se mantiene el envoltorio `^(?:…)$`, más estricto y deseado; R-01.6 enmendada en SPEC-US-01 v3.1). Test de respaldo verificado: `frontend/src/app/core/http/mappers.spec.ts › [F-01.1][R-01.6] patrón sin anclas exige coincidencia completa` |
 | F-01.2 | MINOR | `docs/reviews/REVIEW-US-01.md` | RESUELTO — commit a246e40, test `frontend/src/app/core/quote/quote.store.spec.ts › [F-01.2][R-01.8] setStep1Values, setSelectedPlan, clearSelectedPlan y setConfirmation escriben sin esperar al effect` (+ `[F-01.2][R-01.20]`); retirada la espera por polling de `choosePlan` |
 | F-01.3 | MINOR | `docs/reviews/REVIEW-US-01.md` | RESUELTO — commit a246e40, test `frontend/src/app/app.routes.spec.ts › [F-01.3][R-01.1]` y `frontend/e2e/platform-contract.spec.ts › [F-01.3][R-01.1]` |

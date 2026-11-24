@@ -20,4 +20,12 @@
 | F-01.2 persistencia asíncrona (ms) | MINOR | No figuraba en la pregunta del Orquestador (omisión suya); se incluye en "Corregir todos" por coherencia con la decisión | @frontend-engineer |
 
 ## Parte 2 — Re-auditoría y verificación manual
-*(Se completa tras las correcciones y la re-auditoría de `@qa-reviewer`.)*
+### Re-auditoría (log 15)
+- Primera instancia de `@qa-reviewer` en `opus` detenida por límite de uso de la API. **Decisión humana (literal):** *"Revisor en sonnet ahora"* (opción recomendada: continúa ya; pierde la diversidad de modelo, se documenta y el Orquestador en opus contrasta).
+- Resultado: 17/17 hallazgos cerrados (13 RESUELTO, 3 ACEPTADO por decisión humana + F-PL.3); US-01..03 `APROBADO`, PLATFORM `APROBADO CON OBSERVACIONES`; `trace-check` OK.
+
+### Hallazgos nuevos de la re-auditoría
+- **Decisión humana (literal):** *"Corregir F-PL.9 y F-PL.10, aceptar 7 y 8"* → F-PL.9/F-PL.10 corregidos (log 16) y contrastados por el Orquestador; F-PL.7/F-PL.8 `ACEPTADO`.
+
+### Verificación manual del humano
+*(Pendiente: flujo solo con teclado, cambio sin deploy en el admin, aislamiento por país, responsive, lector de pantalla opcional — en `docker compose up --build` de la máquina del humano.)*
