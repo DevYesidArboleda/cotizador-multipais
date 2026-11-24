@@ -3,8 +3,22 @@
 Una sola aplicación **Angular 22** (un solo build) que cotiza seguros de autos para Colombia y Chile, con formulario, planes, coberturas, precios y términos **100 % configurables desde Strapi 5**, construida con un flujo agéntico **Spec-Driven Development** con puntos de control humanos (ver [`FLOW.md`](./FLOW.md)) y con **CI/CD** hacia una capa gratuita (Render + Neon).
 
 > Marca ficticia: **Linde Auto**. Todos los datos son ficticios.
->
-> **Demo pública:** https://cotizador-frontend-8qqo.onrender.com/co/quote/step-1 · https://cotizador-frontend-8qqo.onrender.com/cl/quote/step-1 (Render Free: el primer acceso tras 15 min sin uso tarda ~1 min; si aparece "Reintentar", púlsalo).
+
+## Demo pública
+
+| Qué | URL |
+| :--- | :--- |
+| App — Colombia | https://cotizador-frontend-8qqo.onrender.com/co/quote/step-1 |
+| App — Chile | https://cotizador-frontend-8qqo.onrender.com/cl/quote/step-1 |
+| Strapi Admin | https://cotizador-strapi.onrender.com/admin |
+
+**Acceso al admin de la demo (credenciales ficticias, solo para evaluación):**
+- Usuario: `admin@example.com`
+- Contraseña: `DevAdminPass1234567890`
+
+Con ellas se puede probar el "cambio sin deploy": editar un campo, plan o término en el admin → **Publish** → recargar la app.
+
+> Render Free suspende los servicios tras 15 min sin uso: el primer acceso tarda ~1 min. Si la app muestra "Reintentar", púlsalo (ver ADR-003, K1). Estas credenciales se rotarán al terminar la evaluación.
 
 ## Arranque en un solo comando
 
