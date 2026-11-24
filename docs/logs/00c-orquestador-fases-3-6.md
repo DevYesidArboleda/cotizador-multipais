@@ -20,3 +20,11 @@
 - Sincronización a la carpeta del humano siempre desde un **clon limpio del HEAD** (nunca trabajo a medias de los agentes).
 - Puertos distintos para agentes en paralelo (1337 / 1340) y prohibición de levantar servidores al agente de plataforma durante la ronda paralela.
 - Eliminación del binario `actionlint` obtenido por `go install` (F-PL.3).
+
+## Primer CI remoto con el stack completo (22:29, tras el push del humano de `96e8668`)
+- Mensaje del humano (literal): "Ya hice el push"
+- `gh run view 45318248703`: ✓ Detectar · ✓ Gobierno · ✓ Frontend · ✓ Backend · **✓ E2E (docker compose + smoke + Playwright) 5m24s** · **✓ E2E Postgres 5m11s** · ✗ Imágenes (backend, frontend).
+- Error literal: `Unable to resolve action aquasecurity/trivy-action@0.28.0, unable to find version 0.28.0`.
+- **Causa raíz (error del Orquestador desde la Fase 1, commit `478dfdb`):** las etiquetas del repositorio llevan prefijo `v` (`git ls-remote --tags` → `refs/tags/v0.28.0`); `0.28.0` nunca existió. actionlint no valida la existencia de versiones de acciones.
+- **Corrección (Orquestador, una línea):** `aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0` (commit del tag anotado `v0.36.0^{}`), fijado por SHA por seguridad de cadena de suministro.
+- Primera verificación real de `docker compose up --build` completo, Nginx con CSP, Playwright contra contenedores y paridad Postgres: **verde en GitHub Actions**.
