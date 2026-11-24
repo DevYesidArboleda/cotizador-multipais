@@ -27,5 +27,20 @@
 ### Hallazgos nuevos de la re-auditoría
 - **Decisión humana (literal):** *"Corregir F-PL.9 y F-PL.10, aceptar 7 y 8"* → F-PL.9/F-PL.10 corregidos (log 16) y contrastados por el Orquestador; F-PL.7/F-PL.8 `ACEPTADO`.
 
-### Verificación manual del humano
-*(Pendiente: flujo solo con teclado, cambio sin deploy en el admin, aislamiento por país, responsive, lector de pantalla opcional — en `docker compose up --build` de la máquina del humano.)*
+### Verificación manual del humano (2026-11-23 23:01)
+- **Entorno:** `docker compose up --build` en Docker Desktop del humano, sobre `4905415` (el mismo commit con CI y CD en verde).
+- **Mensaje del humano (literal):** *"hice un cambio en una etiqueta y tomo normal, esta funcionando bien los paso"*
+- **Evidencia aportada:**
+
+| # | Qué muestra | Archivo |
+| :--- | :--- | :--- |
+| 1 | Paso 1 de Colombia con la etiqueta original "Fecha de nacimiento*", marca "Linde Auto", stepper, selector de país y ayuda de placa (auto y moto) | `evidence/HITL-3-1-app-antes-label-original.png` |
+| 2 | Strapi admin: campo `birthDate` (`semanticRole: birth_date`) con `label` cambiado a "Fecha de nacimiento test" y estado **Published** (el humano envió esta captura dos veces; se guarda una) | `evidence/HITL-3-2-strapi-label-editado.png` |
+| 3 | La app, tras recargar y **sin ningún despliegue**, muestra "Fecha de nacimiento test*" | `evidence/HITL-3-3-app-label-test-sin-deploy.png` |
+
+- **Criterios verificados por el humano:** "cambio de configuración en vivo sin deploy" (R-01.21, AC-01.3 — la parte manual de los E2E-M) ✅ y funcionamiento de los pasos ✅.
+- **Cubiertos por evidencia automática en Docker real (CI run 45320942117, success):** flujo completo solo con teclado (`e2e/full-flow-co.spec.ts`), aislamiento por país (`us-01-country-isolation`, `us-03-payment › [F-03.1]`), reflow 320 px y objetivos de 44 px (T5/T8), axe WCAG 2.2 AA. El humano no reportó explícitamente las pruebas de teclado, aislamiento y móvil por separado; quedan respaldadas por esos tests.
+- **No realizado:** lector de pantalla (T9, opcional).
+
+## Decisión final de HITL-3
+`APROBADO` — 21 hallazgos cerrados (16 RESUELTO, 5 ACEPTADO por decisión humana), `trace-check` OK, CI y CD en verde, verificación manual del cambio sin deploy con evidencia.

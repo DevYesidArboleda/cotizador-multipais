@@ -33,3 +33,7 @@
 - Mensaje del humano (literal): "Ya subo cambios"
 - **CI run 45320942117 → success:** ✓ Detectar 10s · ✓ Gobierno 16s · ✓ Frontend 30s · ✓ Backend 1m46s · ✓ Imágenes backend 4m53s · ✓ Imágenes frontend 1m23s · ✓ E2E (docker compose + smoke + Playwright) 5m21s · ✓ E2E Postgres 9m17s.
 - **CD run 45322221004 → success:** ✓ ¿Hay aplicación que publicar? · ✓ Publicar imágenes en GHCR (backend 54s, frontend 31s) · ✓ Desplegar en Render (se omite con aviso: secrets de Render aún no configurados por el humano — HITL-4 opcional, `docs/DEPLOY.md`).
+
+## Cierre de HITL-3 (23:01)
+- Mensaje del humano (literal): "hice un cambio en una etiqueta y tomo normal, esta funcionando bien los paso" (+4 capturas; 2 idénticas).
+- Registrado en `docs/hitl/HITL-3-review.md` (decisión final `APROBADO`) con evidencia en `docs/hitl/evidence/HITL-3-*.png`. El Orquestador separó lo verificado por el humano (cambio sin deploy, pasos) de lo respaldado por tests automáticos en Docker real (teclado, aislamiento, responsive).
