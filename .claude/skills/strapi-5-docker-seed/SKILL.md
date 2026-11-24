@@ -78,7 +78,7 @@ Draft & Publish **activado** en `form-field` e `insurance-plan`; **desactivado**
 
 ## 2. Seed idempotente y no destructivo (`src/index.ts` → `bootstrap`)
 - Solo Document Service API, p. ej. `strapi.documents('api::country.country').findFirst({ filters: { code } })` y `.create({ data, status: 'published' })`. Prohibido `entityService`. El seed pasa por los middlewares I0 a I5, así que no puede violarlos.
-- **Clave lógica:** `code` | `country.code + key` | `country.code + slug`. Si existe, **no se toca** (respeta las ediciones de negocio). Se controla con `SEED_ON_BOOT=true|false`.
+- **Solo primera vez por país (HITL-3, F-PL.2 "sembrar solo si la BD está vacía"):** clave lógica `country.code`. Si el país ya existe, el seed **no crea ni recrea nada** de ese país (ni campos ni planes), aunque negocio los haya borrado o renombrado. Si no existe, crea país, campos y planes. Se controla además con `SEED_ON_BOOT=true|false`.
 - **Datos ficticios** (regla 5; correos `@example.com`). Patrones y textos editables por negocio después.
 
 **Países:**
@@ -146,4 +146,4 @@ Reglas de las consultas:
 ## Notas de implementación (Fase 4, log 07)
 - **`locale` es un nombre de atributo reservado en Strapi 5.63:** el esquema de `country` lo guarda como `localeCode` y el controller lo expone como `locale` en la respuesta pública (contrato intacto). No filtrar por `locale` en queries.
 - Strapi crea automáticamente los API tokens "Read Only" y "Full Access": el bootstrap los revoca en cada arranque.
-- Con `SEED_ON_BOOT=true` un campo/plan borrado a propósito por negocio se recrea en el siguiente arranque: en la nube poner `SEED_ON_BOOT=false` tras el primer despliegue.
+- Seed (HITL-3, F-PL.2): el seed de cada país corre solo si ese país no existe. Con `SEED_ON_BOOT=true` es seguro dejarlo activo: tras la primera vez no recrea ni duplica campos o planes borrados/renombrados por negocio. Limitación: si el primer arranque se interrumpe tras crear el país, el resto no se completa solo (borrar el país en el admin y reiniciar).

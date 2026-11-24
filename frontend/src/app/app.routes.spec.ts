@@ -34,7 +34,14 @@ describe('[R-01.1] rutas de entrada', () => {
     expect(await navigate('/xyz/quote/step-1')).toBe('/country-not-found');
   });
 
-  it('[R-01.1] una ruta fuera de las cuatro válidas termina en /country-not-found', async () => {
-    expect(await navigate('/co/otra-cosa')).toBe('/country-not-found');
+  it.each([
+    ['/co/otra-cosa', '/co/quote/step-1'],
+    ['/cl/quote/step-9', '/cl/quote/step-1'],
+  ])('[F-01.3][R-01.1] paso desconocido con país válido redirige a step-1: %s', async (entrada, destino) => {
+    expect(await navigate(entrada)).toBe(destino);
+  });
+
+  it('[F-01.3][R-01.1] con país inválido una ruta desconocida sigue en /country-not-found', async () => {
+    expect(await navigate('/xyz/otra-cosa')).toBe('/country-not-found');
   });
 });

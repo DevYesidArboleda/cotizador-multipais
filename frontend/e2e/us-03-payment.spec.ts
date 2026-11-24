@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 const confirmationNumber = (page: import('@playwright/test').Page) => page.locator('.number');
 
 test.describe('[R-03.14][AC-03.3] pago aprobado', () => {
-  test('[R-03.11][AC-03.3] al pagar el botón queda bloqueado con aria-busy y luego aparece la confirmación con el número', async ({ page }) => {
+  test('@strapi [R-03.11][AC-03.3] al pagar el botón queda bloqueado con aria-busy y luego aparece la confirmación con el número', async ({ page }) => {
     await goToStep3(page);
     await acceptTerms(page).check();
     await payButton(page).click();
@@ -22,7 +22,7 @@ test.describe('[R-03.14][AC-03.3] pago aprobado', () => {
     await expect(page.getByRole('button', { name: /Pagar/ })).toHaveCount(0);
   });
 
-  test('[R-03.14][AC-03.21] el número cumple COT-CO-20261123-XXXX con el reloj local fijado', async ({ page }) => {
+  test('@strapi [R-03.14][AC-03.21] el número cumple COT-CO-20261123-XXXX con el reloj local fijado', async ({ page }) => {
     await goToStep3(page);
     await acceptTerms(page).check();
     await payButton(page).click();
@@ -31,7 +31,7 @@ test.describe('[R-03.14][AC-03.3] pago aprobado', () => {
 });
 
 test.describe('[R-03.12][AC-03.4][R-03.21] pago rechazado y reintento', () => {
-  test('[R-03.12][AC-03.4] el rechazo muestra role=alert, conserva datos y aceptación, devuelve el foco a "Pagar" y un reintento aprobado confirma', async ({ page }) => {
+  test('@strapi [R-03.12][AC-03.4] el rechazo muestra role=alert, conserva datos y aceptación, devuelve el foco a "Pagar" y un reintento aprobado confirma', async ({ page }) => {
     await goToStep3(page);
     await acceptTerms(page).check();
     await simulationRadio(page, 'Rechazado').check();
@@ -49,7 +49,7 @@ test.describe('[R-03.12][AC-03.4][R-03.21] pago rechazado y reintento', () => {
     await expect(confirmationNumber(page)).toHaveText(QUOTE_NUMBER);
   });
 
-  test('[R-03.21][AC-03.26] el selector está etiquetado "Simulación de pago (solo pruebas)", con "Aprobado" por defecto y vuelve a "Aprobado" al recargar', async ({ page }) => {
+  test('@strapi [R-03.21][AC-03.26] el selector está etiquetado "Simulación de pago (solo pruebas)", con "Aprobado" por defecto y vuelve a "Aprobado" al recargar', async ({ page }) => {
     await goToStep3(page);
     await expect(page.getByRole('group', { name: 'Simulación de pago (solo pruebas)' })).toBeVisible();
     await expect(simulationRadio(page, 'Aprobado')).toBeChecked();
@@ -62,7 +62,7 @@ test.describe('[R-03.12][AC-03.4][R-03.21] pago rechazado y reintento', () => {
 });
 
 test.describe('[R-03.11] doble envío', () => {
-  test('[R-03.11][AC-03.8] doble clic rápido: un solo pago y un único número de cotización', async ({ page }) => {
+  test('@strapi [R-03.11][AC-03.8] doble clic rápido: un solo pago y un único número de cotización', async ({ page }) => {
     await countQuoteNumbers(page);
     await goToStep3(page);
     await acceptTerms(page).check();
@@ -72,7 +72,7 @@ test.describe('[R-03.11] doble envío', () => {
     expect(await quoteDraws(page)).toBe(1);
   });
 
-  test('[R-03.11] dos clics síncronos (antes de que el DOM se deshabilite) ejecutan un solo pago', async ({ page }) => {
+  test('@strapi [R-03.11] dos clics síncronos (antes de que el DOM se deshabilite) ejecutan un solo pago', async ({ page }) => {
     await countQuoteNumbers(page);
     await goToStep3(page);
     await acceptTerms(page).check();
@@ -84,7 +84,7 @@ test.describe('[R-03.11] doble envío', () => {
     expect(await quoteDraws(page)).toBe(1);
   });
 
-  test('[R-03.11][AC-03.9] Enter más clic inmediato ejecutan un solo pago', async ({ page }) => {
+  test('@strapi [R-03.11][AC-03.9] Enter más clic inmediato ejecutan un solo pago', async ({ page }) => {
     await countQuoteNumbers(page);
     await goToStep3(page);
     await acceptTerms(page).check();
@@ -105,7 +105,7 @@ test.describe('[R-03.14][AC-03.18][AC-03.19][AC-03.20] confirmación y nueva cot
     return (await confirmationNumber(page).textContent()) ?? '';
   }
 
-  test('[R-03.14][AC-03.18] "Atrás" o abrir /step-3 tras confirmar redirige a /confirmation y no hay botón de pagar', async ({ page }) => {
+  test('@strapi [R-03.14][AC-03.18] "Atrás" o abrir /step-3 tras confirmar redirige a /confirmation y no hay botón de pagar', async ({ page }) => {
     await pay(page);
     await page.goBack();
     await expect(page).toHaveURL(/\/co\/quote\/confirmation$/);
@@ -118,7 +118,7 @@ test.describe('[R-03.14][AC-03.18][AC-03.19][AC-03.20] confirmación y nueva cot
     }
   });
 
-  test('[R-03.14][AC-03.19] al recargar la confirmación se ven el mismo número, plan y precio, sin documento ni correo', async ({ page }) => {
+  test('@strapi [R-03.14][AC-03.19] al recargar la confirmación se ven el mismo número, plan y precio, sin documento ni correo', async ({ page }) => {
     const number = await pay(page);
     await page.reload();
     await expect(confirmationNumber(page)).toHaveText(number);
@@ -129,7 +129,7 @@ test.describe('[R-03.14][AC-03.18][AC-03.19][AC-03.20] confirmación y nueva cot
     expect(text).not.toContain('ana.perez@example.com');
   });
 
-  test('[R-03.15][AC-03.20] "Nueva cotización" borra solo la clave del país actual y deja los datos de Chile intactos', async ({ page }) => {
+  test('@strapi [R-03.15][AC-03.20] "Nueva cotización" borra solo la clave del país actual y deja los datos de Chile intactos', async ({ page }) => {
     await openStep1(page, 'cl');
     await fillCl(page);
     await submit(page);
@@ -159,5 +159,45 @@ test.describe('[R-03.15] E2E-M nueva cotización con datos simulados', () => {
     await acceptTerms(page).check();
     await payButton(page).click();
     await expect(confirmationNumber(page)).toHaveText(QUOTE_NUMBER);
+  });
+});
+
+test.describe('[F-03.1][R-03.19] aislamiento del estado de pago por país', () => {
+  test('@strapi [F-03.1][R-03.19][R-03.12] pagar CO, cambiar a CL por el header sin recargar y pagar con Rechazado muestra rechazo y ningún número de CO', async ({ page }) => {
+    // 1) Pago aprobado en Colombia.
+    await goToStep3(page);
+    await acceptTerms(page).check();
+    await payButton(page).click();
+    await expect(confirmationNumber(page)).toHaveText(QUOTE_NUMBER);
+    const coNumber = (await confirmationNumber(page).textContent()) ?? '';
+    expect(coNumber).toContain('COT-CO-');
+
+    // 2) Cambio de país por el selector del header (navegación SPA, SIN recarga).
+    await page.evaluate(() => { (window as unknown as { __spa: boolean }).__spa = true; });
+    await page.getByRole('link', { name: 'Chile' }).first().click();
+    await expect(page).toHaveURL(/\/cl\/quote\/step-1$/);
+    await fillCl(page);
+    await submit(page);
+    await expect(page).toHaveURL(/\/cl\/quote\/step-2$/);
+    await page.getByRole('radio', { name: /^Plus/ }).check();
+    await page.getByRole('button', { name: 'Continuar al resumen' }).click();
+    await expect(page).toHaveURL(/\/cl\/quote\/step-3$/);
+
+    // 3) Rechazado en Chile: se ejecuta una simulación nueva, hay alerta y no se persiste ninguna confirmación.
+    await acceptTerms(page).check();
+    await simulationRadio(page, 'Rechazado').check();
+    await payButton(page).click();
+    await expect(page.getByRole('alert')).toContainText('Pago rechazado');
+    await expect(page).toHaveURL(/\/cl\/quote\/step-3$/);
+    await expect(page.locator('body')).not.toContainText(coNumber);
+    const cl = await page.evaluate(() => sessionStorage.getItem('auto_quote_v1_cl') ?? '');
+    expect(cl).not.toContain('confirmation');
+    expect(cl).not.toContain(coNumber);
+    expect(await page.evaluate(() => (window as unknown as { __spa?: boolean }).__spa)).toBe(true);
+
+    // 4) Aprobado en Chile: número con prefijo COT-CL, distinto al de Colombia.
+    await simulationRadio(page, 'Aprobado').check();
+    await payButton(page).click();
+    await expect(confirmationNumber(page)).toHaveText(/^COT-CL-\d{8}-[0-9A-F]{4}$/);
   });
 });

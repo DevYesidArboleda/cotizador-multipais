@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'];
 
 test.describe('[R-03.20] accesibilidad del Paso 3', () => {
-  test('[R-03.20] foco al h1 al entrar, regiones con nombre y cero violaciones axe en estado ready', async ({ page }) => {
+  test('@strapi [R-03.20] foco al h1 al entrar, regiones con nombre y cero violaciones axe en estado ready', async ({ page }) => {
     await goToStep3(page);
     await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu cotización' })).toBeFocused();
     await expect(page.getByRole('complementary', { name: 'Pago' })).toBeVisible();
@@ -17,7 +17,7 @@ test.describe('[R-03.20] accesibilidad del Paso 3', () => {
     expect(results.violations).toEqual([]);
   });
 
-  test('[R-03.20] cero violaciones axe con el pago rechazado y role=alert visible', async ({ page }) => {
+  test('@strapi [R-03.20] cero violaciones axe con el pago rechazado y role=alert visible', async ({ page }) => {
     await goToStep3(page);
     await acceptTerms(page).check();
     await simulationRadio(page, 'Rechazado').check();
@@ -27,7 +27,7 @@ test.describe('[R-03.20] accesibilidad del Paso 3', () => {
     expect(results.violations).toEqual([]);
   });
 
-  test('[R-03.20] aria-busy="true" en el botón y en la caja de pago durante el procesamiento', async ({ page }) => {
+  test('@strapi [R-03.20] aria-busy="true" en el botón y en la caja de pago durante el procesamiento', async ({ page }) => {
     await goToStep3(page);
     await acceptTerms(page).check();
     await payButton(page).click();
@@ -36,15 +36,18 @@ test.describe('[R-03.20] accesibilidad del Paso 3', () => {
     await expect(page.getByRole('checkbox', { name: 'Acepto los términos y condiciones' })).toBeDisabled();
   });
 
-  test('[R-03.20][AC-03.25] solo con teclado: región de términos (Tab), casilla (Space), Pagar (Enter) y confirmación con el foco en su h1', async ({ page }) => {
+  test('@strapi [F-03.2][R-03.20][AC-03.25] solo con teclado: región de términos (Tab), casilla (Space), Pagar (Enter) y confirmación con el foco en su h1', async ({ page }) => {
     await goToStep3(page);
     const region = page.getByRole('region', { name: /Términos y condiciones/ });
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused(); // F-03.2: estado estable antes de tabular
+    await expect(region).toBeVisible();
     for (let i = 0; i < 4; i += 1) await page.keyboard.press('Tab');
     await expect(region).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(acceptTerms(page)).toBeFocused();
     await page.keyboard.press('Space');
     await expect(acceptTerms(page)).toBeChecked();
+    await expect(payButton(page)).toBeEnabled(); // F-03.2: esperar el re-render, no un Tab a ciegas
     await page.keyboard.press('Tab');
     await expect(simulationRadio(page, 'Aprobado')).toBeFocused();
     await page.keyboard.press('Tab');
@@ -57,7 +60,7 @@ test.describe('[R-03.20] accesibilidad del Paso 3', () => {
     await expect(page.getByRole('button', { name: 'Nueva cotización' })).toBeFocused();
   });
 
-  test('[R-03.20] la confirmación pasa axe sin violaciones', async ({ page }) => {
+  test('@strapi [R-03.20] la confirmación pasa axe sin violaciones', async ({ page }) => {
     await goToStep3(page);
     await acceptTerms(page).check();
     await payButton(page).click();
@@ -68,7 +71,7 @@ test.describe('[R-03.20] accesibilidad del Paso 3', () => {
 });
 
 test.describe('[R-03.20] reflow y objetivos táctiles (guía §8, T5 y T8)', () => {
-  test('[R-03.20] T5: a 320 px de ancho no hay scroll horizontal en el resumen', async ({ page }) => {
+  test('@strapi [R-03.20] T5: a 320 px de ancho no hay scroll horizontal en el resumen', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 256 });
     await goToStep3(page);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
@@ -76,7 +79,7 @@ test.describe('[R-03.20] reflow y objetivos táctiles (guía §8, T5 y T8)', () 
     await expect(payButton(page)).toBeVisible();
   });
 
-  test('[R-03.20] T5: a 320 px tampoco hay scroll horizontal en la confirmación', async ({ page }) => {
+  test('@strapi [R-03.20] T5: a 320 px tampoco hay scroll horizontal en la confirmación', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 256 });
     await goToStep3(page);
     await acceptTerms(page).check();
@@ -86,7 +89,7 @@ test.describe('[R-03.20] reflow y objetivos táctiles (guía §8, T5 y T8)', () 
     expect(overflow).toBe(false);
   });
 
-  test('[R-03.20] T8: en móvil los objetivos interactivos del resumen miden al menos 44 x 44 px', async ({ page }) => {
+  test('@strapi [R-03.20] T8: en móvil los objetivos interactivos del resumen miden al menos 44 x 44 px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await goToStep3(page);
     const targets = [

@@ -7,7 +7,7 @@ import { FIXED_NOW } from './support/form-helpers';
  * Cubre CLAUDE.md regla 7 y SPEC-US-03 R-03.20 / AC-03.25 sin usar el ratón en ningún punto.
  */
 test.describe('[R-03.20][AC-03.25] flujo completo de Colombia solo con teclado', () => {
-  test('[R-03.20][AC-03.25][R-03.12][R-03.14] Paso 1 -> 2 -> 3 -> rechazo -> reintento -> confirmación con número', async ({ page }) => {
+  test('@strapi [R-03.20][AC-03.25][R-03.12][R-03.14] Paso 1 -> 2 -> 3 -> rechazo -> reintento -> confirmación con número', async ({ page }) => {
     await page.clock.setFixedTime(FIXED_NOW);
     await page.goto('/co/quote/step-1');
     await expect(page.getByRole('heading', { level: 1, name: 'Tus datos y los de tu vehículo' })).toBeVisible();
@@ -49,14 +49,16 @@ test.describe('[R-03.20][AC-03.25] flujo completo de Colombia solo con teclado',
     // Paso 2: flechas para elegir, Tab hasta "Continuar al resumen", Enter.
     await expect(page).toHaveURL(/\/co\/quote\/step-2$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Elige tu plan' })).toBeFocused();
+    await expect(page.getByRole('radio').first()).toBeVisible(); // estado ready antes de tabular
+    await page.keyboard.press('Tab'); // "Volver" va antes del grupo (orden DOM = orden visual)
+    await expect(page.getByRole('link', { name: 'Volver' })).toBeFocused();
     await page.keyboard.press('Tab'); // Radio del primer plan (grupo de una sola parada)
     await expect(page.getByRole('radio').first()).toBeFocused();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Space');
     await expect(page.getByRole('radio', { name: /^Plus/ })).toBeChecked();
-    await page.keyboard.press('Tab');
-    await expect(page.getByRole('link', { name: 'Volver' })).toBeFocused();
-    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Continuar al resumen' })).toBeEnabled();
+    await page.keyboard.press('Tab'); // AC-02.13: un solo Tab desde el grupo llega a "Continuar al resumen"
     await expect(page.getByRole('button', { name: 'Continuar al resumen' })).toBeFocused();
     await page.keyboard.press('Enter');
 
@@ -64,6 +66,8 @@ test.describe('[R-03.20][AC-03.25] flujo completo de Colombia solo con teclado',
     await expect(page).toHaveURL(/\/co\/quote\/step-3$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu cotización' })).toBeFocused();
     await expect(page.getByText('******4050')).toBeVisible();
+    await expect(page.getByRole('region', { name: /Términos y condiciones/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pagar' })).toBeVisible();
     for (let i = 0; i < 4; i += 1) await page.keyboard.press('Tab');
     await expect(page.getByRole('region', { name: /Términos y condiciones/ })).toBeFocused();
     await page.keyboard.press('Tab');
@@ -72,6 +76,7 @@ test.describe('[R-03.20][AC-03.25] flujo completo de Colombia solo con teclado',
     await page.keyboard.press('Tab');
     await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('radio', { name: 'Rechazado' })).toBeChecked();
+    await expect(page.getByRole('button', { name: 'Pagar' })).toBeEnabled(); // F-03.2: esperar el re-render antes de tabular
     await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: 'Pagar' })).toBeFocused();
     await page.keyboard.press('Enter');
@@ -87,6 +92,7 @@ test.describe('[R-03.20][AC-03.25] flujo completo de Colombia solo con teclado',
     await page.keyboard.press('ArrowUp');
     await expect(page.getByRole('radio', { name: 'Aprobado' })).toBeChecked();
     await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Pagar' })).toBeFocused();
     await page.keyboard.press('Enter');
 
     // Confirmación con número, foco en el h1 y sin documento ni correo.

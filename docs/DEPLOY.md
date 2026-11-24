@@ -58,7 +58,9 @@ Abre `$APP/co/quote/step-1` y `$APP/cl/quote/step-1`. Registra el resultado en `
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.postgres.yml up --build
 ```
-Mismas imágenes; el override solo añade un servicio `postgres` y cambia variables. Es lo que ejecuta el job `E2E Postgres` de CI.
+En local, Strapi se publica solo en `127.0.0.1:1337` (admin accesible desde tu máquina, no desde la red) y el admin inicial usa credenciales ficticias de `docker-compose.yml`; cámbialas con `.env` si compartes el equipo. Las imágenes y variables son las mismas que en CI.
+
+Mismas imágenes; el override solo añade un servicio `postgres` y cambia variables. Es lo que ejecuta el job `E2E Postgres` de CI: smoke de seguridad más los E2E de solo lectura (`playwright test --grep @strapi`), sin token de escritura.
 
 ## Limitaciones conocidas de la capa gratuita
 - Los servicios se suspenden tras 15 min sin tráfico: el primer acceso tarda ~1 min.

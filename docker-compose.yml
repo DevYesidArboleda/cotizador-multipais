@@ -22,7 +22,8 @@ services:
     image: cotizador-multipais-backend:local
     restart: unless-stopped
     ports:
-      - "1337:1337"   # Solo para acceder al panel admin en local (http://localhost:1337/admin)
+      # Solo loopback (F-PL.5): el admin local trae credenciales ficticias conocidas y no debe verse desde la red.
+      - "127.0.0.1:1337:1337"   # Panel admin en local: http://localhost:1337/admin
     environment:
       <<: *strapi-secrets
       NODE_ENV: production

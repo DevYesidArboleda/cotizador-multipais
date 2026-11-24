@@ -109,9 +109,8 @@ export const continueButton = (page: Page): Locator => page.getByRole('button', 
 export async function choosePlan(page: Page, name: string, country = 'co'): Promise<void> {
   await planRadio(page, name).check();
   await expect(page.getByText('Elegido', { exact: true })).toHaveCount(1);
-  await expect
-    .poll(() => page.evaluate((key) => sessionStorage.getItem(key) ?? '', `auto_quote_v1_${country}`))
-    .toContain('selectedPlan');
+  // F-01.2: el guardado es síncrono en la misma llamada; basta comprobar la clave sin esperas.
+  expect(await page.evaluate((key) => sessionStorage.getItem(key) ?? '', `auto_quote_v1_${country}`)).toContain('selectedPlan');
 }
 
 export const payButton = (page: Page): Locator => page.getByRole('button', { name: /^(Pagar|Procesando pago)/ });

@@ -24,11 +24,31 @@ export class QuoteStore {
   /** Campos a marcar como tocados al volver al Paso 1 por un guard (R-01.10). Solo en memoria. */
   private readonly pendingTouch = signal<readonly string[]>([]);
 
+  /** Aviso de un guard para el paso destino (F-02.3). Solo en memoria; se consume una vez. */
+  private readonly pendingNotice = signal<'plan-unavailable' | null>(null);
+
+  setPendingNotice(notice: 'plan-unavailable' | null): void {
+    this.pendingNotice.set(notice);
+  }
+
+  consumePendingNotice(): 'plan-unavailable' | null {
+    const notice = untracked(this.pendingNotice);
+    if (notice !== null) this.pendingNotice.set(null);
+    return notice;
+  }
+
   constructor() {
     effect(() => {
       const { country, state, persist } = this.slot();
       if (persist && country) writeQuoteState(this.storage, country, state);
     });
+  }
+
+  /** Actualiza el estado y lo escribe en la MISMA llamada (F-01.2); el `effect` queda como respaldo idempotente. */
+  private commit(update: (state: QuoteState) => QuoteState): void {
+    this.slot.update((s) => ({ ...s, state: update(s.state), persist: true }));
+    const { country, state } = untracked(this.slot);
+    if (country) writeQuoteState(this.storage, country, state);
   }
 
   /** Activa un país (idempotente): lee su clave y descarta el estado en memoria del anterior. */
@@ -41,26 +61,26 @@ export class QuoteStore {
 
   /** Guarda los valores del Paso 1 indexados por `documentId` (R-01.8, R-01.9). */
   setStep1Values(values: Step1Values): void {
-    this.slot.update((s) => ({ ...s, state: { ...s.state, step1: values }, persist: true }));
+    this.commit((state) => ({ ...state, step1: values }));
   }
 
   /** Guarda la selección única de plan en el mismo `QuoteState` (R-02.11, R-02.17). */
   setSelectedPlan(plan: SelectedPlan): void {
-    this.slot.update((s) => ({ ...s, state: { ...s.state, selectedPlan: plan }, persist: true }));
+    this.commit((state) => ({ ...state, selectedPlan: plan }));
   }
 
   /** Limpia la selección (plan que ya no existe, R-02.12). */
   clearSelectedPlan(): void {
-    this.slot.update((s) => {
-      const next: QuoteState = { ...s.state };
+    this.commit((state) => {
+      const next: QuoteState = { ...state };
       delete next.selectedPlan;
-      return { ...s, state: next, persist: true };
+      return next;
     });
   }
 
   /** Guarda la confirmación tras un pago aprobado (R-03.14). */
   setConfirmation(confirmation: QuoteConfirmation): void {
-    this.slot.update((s) => ({ ...s, state: { ...s.state, confirmation }, persist: true }));
+    this.commit((state) => ({ ...state, confirmation }));
   }
 
   /** "Nueva cotización": borra SOLO la clave del país activo y deja el estado vacío sin reescribirlo (R-03.15). */

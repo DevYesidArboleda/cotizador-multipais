@@ -1,6 +1,6 @@
 # SPEC-US-01 — Formulario Dinámico de Datos del Tomador y Vehículo
 
-- **Historia origen:** `docs/user-stories/US-01.md` · **Versión:** v3 · **Estado:** Aprobado (HITL-1 cerrado 2026-11-23; v3 verificada por el Orquestador — `docs/logs/03-spec-analyst-specs-v3.md`)
+- **Historia origen:** `docs/user-stories/US-01.md` · **Versión:** v3.1 · **Estado:** Aprobado (HITL-1 cerrado 2026-11-23; v3 verificada por el Orquestador — `docs/logs/03-spec-analyst-specs-v3.md`)
 - **ADRs relacionados:** `ADR-001`, `ADR-002` (`docs/adrs/`). `ADR-003` (despliegue gratuito) no aplica a esta spec.
 - **Specs relacionadas:** `SPEC-US-02` (guard del Paso 2 reutiliza `validateStep1`, precio usa roles `birth_date` y `vehicle_year`), `SPEC-US-03` (resumen enmascara `document_number` y muestra `email` sin enmascarar). La opción de `city` aporta `priceAdjustmentPct` al precio de `SPEC-US-02` (GAP-01.22).
 - **Decisiones humanas vinculantes:** `docs/hitl/HITL-1-specs.md` (v3 las aplica: GAP-01.20 correo, GAP-01.21 placa de moto CO, GAP-01.22 contrato de ciudad; E2E de mutación de Strapi con respuesta simulada, sin token de escritura).
@@ -45,7 +45,7 @@ Convención: `Sí` en la última columna = **DECISIÓN HUMANA REQUERIDA** (HITL-
 | R-01.3 | Render por tipo: `text` → `input[type=text]`; `number` → `input[type=number]` con `inputmode="numeric"`; `select` → `select` con opciones en el orden de Strapi y una opción vacía inicial; `date` → `input[type=date]`; `checkbox` → `input[type=checkbox]`. Se muestran `label`, `placeholder` y `helpText` configurados. | US-01 regla "Each field is configured with…" | E2E |
 | R-01.4 | Cada fallo de validación muestra exactamente un mensaje junto al campo: `errorMessage` del campo (o `validationMessage` de la opción para patrón dependiente), vinculado con `aria-describedby` y `aria-invalid="true"`. | US-01 AC "Field validation", GAP-01.12 | Unit + E2E |
 | R-01.5 | Obligatoriedad: `text`/`number`/`date`/`select` requeridos fallan si el valor tras `trim()` es vacío; `checkbox` requerido falla si no está marcado; campo opcional vacío no ejecuta otros validadores. | GAP-01.12 | Unit |
-| R-01.6 | Validadores declarativos (extremos inclusivos): `min`/`max` sobre número; `minLength`/`maxLength` sobre la longitud del texto recortado; `pattern` como `RegExp` aplicada al valor completo tal como se escribió el patrón. Un `pattern` que no compila → `config-error` en ese campo (sin excepción no controlada). | US-01 regla "validations", GAP-01.12 | Unit |
+| R-01.6 | Validadores declarativos (extremos inclusivos): `min`/`max` sobre número; `minLength`/`maxLength` sobre la longitud del texto recortado; `pattern` de Strapi validado contra el valor completo, equivalente a `^(?:patrón)$` (coincidencia total aunque el patrón no esté anclado: con `[0-9]{6}`, `abc123456` es inválido y `123456` válido; los patrones ya anclados se comportan igual que antes). Un `pattern` que no compila → `config-error` en ese campo (sin excepción no controlada). | US-01 regla "validations", GAP-01.12 | Unit |
 | R-01.7 | Al pulsar "Continuar" se validan todos los campos; si hay ≥ 1 error: la URL sigue en `step-1`, el foco va al primer control inválido en orden DOM y una región `aria-live="polite"` anuncia "N errores" (copy en catálogo). Si no hay errores se navega a `step-2`. | US-01 AC "Field validation", GAP-01.19 | E2E |
 | R-01.8 | Cada cambio de valor se guarda en `sessionStorage['auto_quote_v1_<country>']` con forma `QuoteState` (sección 4), indexado por `documentId`. Volver desde Paso 2 o 3, o recargar, restaura todos los valores (incluidos checkbox sin marcar y valores aún inválidos). | US-01 AC "Keep data when going back", CLAUDE regla 6 | Unit de almacenamiento + E2E |
 | R-01.9 | Hidratación tolerante: `documentId` sin campo publicado → ignorado y purgado en el siguiente guardado; tipo del valor distinto del `type` del campo → descartado; valor de `select` ausente de las opciones vigentes → descartado; campo publicado sin valor → vacío. | GAP-01.11 | Unit + E2E |
@@ -635,6 +635,11 @@ Regla (HITL-1): ningún token de escritura de Strapi existe en ningún entorno (
 - Internacionalización a idiomas distintos de `es`.
 
 ## Changelog
+
+### v3.1 (HITL-3, 2026-11-23): enmiendas aceptadas F-01.1 y F-03.3
+- **F-01.1 (aceptado en HITL-3, `docs/reviews/REVIEW-US-01.md`):** se enmienda solo la redacción de R-01.6. El `pattern` de Strapi se valida contra el valor completo, equivalente a `^(?:patrón)$`, como ya implementa `compilePattern`. Motivo: la redacción anterior ("`RegExp` aplicada al valor completo tal como se escribió el patrón") era ambigua para patrones sin anclas; el comportamiento implementado (coincidencia total) es el deseado. Sin cambio de comportamiento con los patrones del seed (anclados).
+- **IDs, estado y verificación:** sin cambios. Ningún ID renumerado ni eliminado; estado `Aprobado` intacto. El test planificado de R-01.6 (`field-validators.spec.ts`) cubre ahora también el caso sin anclas (acción de `@frontend-engineer`).
+- (F-03.3 afecta solo a `SPEC-US-03`; se menciona aquí por ser la misma decisión de HITL-3.)
 
 ### v3 → Aprobado (Orquestador, 2026-11-23)
 - Cierre de HITL-1: el humano aprueba GAP-02.18/GAP-01.22 (opción A, rango [-10, +30]) y decide que el correo **no** sea rol requerido (lo controla Strapi). Estado → `Aprobado`. Sin cambios de contenido.

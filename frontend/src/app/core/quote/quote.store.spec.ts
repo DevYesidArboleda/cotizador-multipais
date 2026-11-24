@@ -150,3 +150,34 @@ describe('[R-03.14][R-03.15] confirmación y nueva cotización', () => {
     expect(store.state()).toEqual({ schemaVersion: 1, step1: {} });
   });
 });
+
+describe('[F-01.2][R-01.8] la escritura ocurre en la misma llamada', () => {
+  it('[F-01.2][R-01.8] setStep1Values, setSelectedPlan, clearSelectedPlan y setConfirmation escriben sin esperar al effect', () => {
+    const { storage, store } = setup();
+    store.activate('co');
+    const stored = () => JSON.parse(storage.data.get('auto_quote_v1_co') ?? '{}');
+    store.setStep1Values({ 'doc-a': 'x' });
+    expect(stored().step1).toEqual({ 'doc-a': 'x' });
+    store.setSelectedPlan({ planDocumentId: 'p1', priceSeenAtSelection: 5 });
+    expect(stored().selectedPlan).toEqual({ planDocumentId: 'p1', priceSeenAtSelection: 5 });
+    store.clearSelectedPlan();
+    expect(stored().selectedPlan).toBeUndefined();
+    store.setConfirmation({ quoteNumber: 'COT-CO-20261123-7B2E', planDocumentId: 'p1', planName: 'Plus', finalPrice: 1, paidAt: '2026-11-23T10:00:00.000Z' });
+    expect(stored().confirmation.quoteNumber).toBe('COT-CO-20261123-7B2E');
+  });
+
+  it('[F-01.2][R-01.20] activar un país no escribe (solo los cambios del usuario)', () => {
+    const { storage, store } = setup();
+    store.activate('co');
+    expect(storage.data.size).toBe(0);
+  });
+});
+
+describe('[F-02.3][R-02.12] aviso pendiente de un guard', () => {
+  it('[F-02.3][R-02.12] el aviso se consume una sola vez', () => {
+    const { store } = setup();
+    store.setPendingNotice('plan-unavailable');
+    expect(store.consumePendingNotice()).toBe('plan-unavailable');
+    expect(store.consumePendingNotice()).toBeNull();
+  });
+});

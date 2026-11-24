@@ -55,6 +55,8 @@ function stepGuard(target: Exclude<QuoteStep, 'step-1'>): CanActivateFn {
       switchMap((result): Observable<boolean | UrlTree> => {
         if (result.kind === 'not-found') return of(router.createUrlTree(['/country-not-found']));
         // Error de red, vacío o config-error: el Paso 1 es quien presenta ese estado (con "Reintentar").
+        // F-03.4: el Paso 3 presenta su propio error recuperable (R-03.18) si la red falla al recargarlo.
+        if (result.kind === 'error' && target === 'step-3') return of(true);
         if (result.kind !== 'ready') return of(redirect('step-1'));
         const state = quote.state();
         const step1Errors = validateStep1(result.config, state.step1, now());
@@ -62,6 +64,7 @@ function stepGuard(target: Exclude<QuoteStep, 'step-1'>): CanActivateFn {
           const decision = decideStepAccess(target, { state, step1Errors, activePlanDocumentIds });
           if (decision.kind === 'allow') return true;
           quote.setPendingTouch(decision.touchFieldDocumentIds);
+          quote.setPendingNotice(decision.notice);
           return redirect(decision.to);
         };
         const needsPlans = target !== 'step-2' && step1Errors.length === 0 && state.selectedPlan !== undefined && !state.confirmation;

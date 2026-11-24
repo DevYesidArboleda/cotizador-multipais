@@ -6,7 +6,7 @@ import { field, openStep1, setText, submit, valid } from './support/form-helpers
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'];
 
 test.describe('[R-01.25] accesibilidad del Paso 1 (Strapi sembrado)', () => {
-  test('[R-01.25] cada control tiene label, aria-required en los requeridos y el h1 recibe el foco al entrar', async ({ page }) => {
+  test('@strapi [R-01.25] cada control tiene label, aria-required en los requeridos y el h1 recibe el foco al entrar', async ({ page }) => {
     await openStep1(page, 'co');
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
     await expect(page).toHaveTitle('Tus datos y los de tu vehículo · Paso 1 de 3 · Linde Auto (Colombia)');
@@ -26,7 +26,7 @@ test.describe('[R-01.25] accesibilidad del Paso 1 (Strapi sembrado)', () => {
     await expect(page.getByLabel('Uso particular')).not.toHaveAttribute('aria-required', 'true');
   });
 
-  test('[R-01.25] cero violaciones axe (WCAG 2.2 AA) en loading-ready y con errores visibles', async ({ page }) => {
+  test('@strapi [R-01.25] cero violaciones axe (WCAG 2.2 AA) en loading-ready y con errores visibles', async ({ page }) => {
     await openStep1(page, 'co');
     const listo = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     expect(listo.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
@@ -36,7 +36,7 @@ test.describe('[R-01.25] accesibilidad del Paso 1 (Strapi sembrado)', () => {
     expect(conErrores.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   });
 
-  test('[R-01.25] el error no depende solo del color: hay texto visible y borde de 2 px', async ({ page }) => {
+  test('@strapi [R-01.25] el error no depende solo del color: hay texto visible y borde de 2 px', async ({ page }) => {
     await openStep1(page, 'co');
     const nombre = field(page, 'Nombre completo');
     await nombre.focus();
@@ -45,7 +45,7 @@ test.describe('[R-01.25] accesibilidad del Paso 1 (Strapi sembrado)', () => {
     expect(await nombre.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe('2px');
   });
 
-  test('[R-01.25] el skip link lleva el foco al contenido principal', async ({ page }) => {
+  test('@strapi [R-01.25] el skip link lleva el foco al contenido principal', async ({ page }) => {
     await openStep1(page, 'co');
     await page.keyboard.press('Shift+Tab');
     const skip = page.getByRole('link', { name: 'Saltar al contenido principal' });
@@ -58,7 +58,7 @@ test.describe('[R-01.25] accesibilidad del Paso 1 (Strapi sembrado)', () => {
 });
 
 test.describe('[AC-01.24] Paso 1 solo con teclado', () => {
-  test('[AC-01.24][R-01.25] Tab recorre los campos y Enter en "Continuar" con un inválido enfoca el primero, con aria-invalid, aria-describedby y aria-live', async ({ page }) => {
+  test('@strapi [AC-01.24][R-01.25] Tab recorre los campos y Enter en "Continuar" con un inválido enfoca el primero, con aria-invalid, aria-describedby y aria-live', async ({ page }) => {
     await openStep1(page, 'co');
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
     const boton = page.getByRole('button', { name: 'Continuar' });
@@ -81,7 +81,7 @@ test.describe('[AC-01.24] Paso 1 solo con teclado', () => {
     await expect(region).toContainText(/Hay \d+ errores en el formulario/);
   });
 
-  test('[AC-01.24] el formulario completo se llena con teclado (Tab, Space en checkbox, flechas en select) y avanza con Enter', async ({ page }) => {
+  test('@strapi [AC-01.24] el formulario completo se llena con teclado (Tab, Space en checkbox, flechas en select) y avanza con Enter', async ({ page }) => {
     await openStep1(page, 'co');
     await field(page, 'Nombre completo').focus();
     await page.keyboard.type('Ana Teclado');
@@ -113,7 +113,7 @@ test.describe('[AC-01.24] Paso 1 solo con teclado', () => {
 });
 
 test.describe('[R-01.26] momento de validación', () => {
-  test('[R-01.26] sin tocar no hay error; al blur aparece; al corregir desaparece al instante', async ({ page }) => {
+  test('@strapi [R-01.26] sin tocar no hay error; al blur aparece; al corregir desaparece al instante', async ({ page }) => {
     await openStep1(page, 'co');
     await expect(page.locator('.field__error')).toHaveCount(0);
     const email = field(page, 'Correo electrónico');
@@ -129,7 +129,7 @@ test.describe('[R-01.26] momento de validación', () => {
 });
 
 test.describe('[R-01.30][AC-01.30] propósito del campo de correo', () => {
-  test('[R-01.30][AC-01.30] el control de correo es input de texto con autocomplete, inputmode y spellcheck; el error es el de Strapi, no el del navegador', async ({ page }) => {
+  test('@strapi [R-01.30][AC-01.30] el control de correo es input de texto con autocomplete, inputmode y spellcheck; el error es el de Strapi, no el del navegador', async ({ page }) => {
     await openStep1(page, 'cl');
     const email = field(page, 'Correo electrónico');
     await expect(email).toHaveAttribute('type', 'text');

@@ -1,6 +1,6 @@
 # SPEC-US-03 — Resumen, Términos y Pago Simulado
 
-- **Historia origen:** `docs/user-stories/US-03.md` · **Versión:** v3 · **Estado:** Aprobado (HITL-1 cerrado 2026-11-23; v3 verificada por el Orquestador — `docs/logs/03-spec-analyst-specs-v3.md`)
+- **Historia origen:** `docs/user-stories/US-03.md` · **Versión:** v3.1 · **Estado:** Aprobado (HITL-1 cerrado 2026-11-23; v3 verificada por el Orquestador — `docs/logs/03-spec-analyst-specs-v3.md`)
 - **ADRs relacionados:** `ADR-001`, `ADR-002` (`docs/adrs/`). `ADR-003` (despliegue gratuito) no aplica a esta spec.
 - **Specs relacionadas:** `SPEC-US-01` (campos, roles, `validateStep1`, `QuoteState`, aislamiento por país), `SPEC-US-02` (plan elegido, `calculateAdjustedPrice` incluido el ajuste por ciudad, `formatPrice`, moneda del plan, avisos de precio).
 - **Decisiones humanas vinculantes:** `docs/hitl/HITL-1-specs.md` (v3 aplica: aparición del correo en el resumen sin enmascarar, GAP-03.18; coherencia con moneda del plan y ajuste por ciudad, GAP-03.19; sin token de escritura en ningún entorno).
@@ -208,7 +208,7 @@ Escenario: Términos sin contenido
   Dado que el texto de términos de mi país está vacío en Strapi
   Cuando llego al resumen
   Entonces veo un error de configuración
-  Y el botón de pagar permanece deshabilitado
+  Y el botón de pagar no está disponible (no se renderiza), por lo que no se puede pagar
 ```
 
 ### AC-03.16 — Términos como texto plano
@@ -225,7 +225,7 @@ Escenario: Los términos no ejecutan HTML
 Escenario: La API de países falla en el resumen
   Dado que la API responde 500 al pedir los términos
   Cuando llego al resumen
-  Entonces veo una alerta con "Reintentar" y el botón de pagar deshabilitado
+  Entonces veo una alerta con "Reintentar" y el botón de pagar no está disponible (no se renderiza), por lo que no se puede pagar
   Cuando la API responde y pulso "Reintentar"
   Entonces veo el resumen sin perder mis datos
 ```
@@ -323,7 +323,7 @@ Esquema del escenario: Configuración de precio inválida bloquea el pago
   Dado que <condición>
   Cuando llego al resumen
   Entonces veo un error de configuración que nombra el problema
-  Y no se muestra ningún precio y el botón de pagar permanece deshabilitado
+  Y no se muestra ningún precio y el botón de pagar no está disponible (no se renderiza), por lo que no se puede pagar
 
   Ejemplos:
     | condición                                                          |
@@ -474,6 +474,11 @@ Tipos: **Unit** (runner por defecto del CLI), **E2E-S** (Playwright contra Strap
 - Enmascarar el correo del tomador, enviarlo por correo o mostrarlo en la confirmación (GAP-03.18).
 
 ## Changelog
+
+### v3.1 (HITL-3, 2026-11-23): enmiendas aceptadas F-01.1 y F-03.3
+- **F-03.3 (aceptado en HITL-3, `docs/reviews/REVIEW-US-03.md`):** se enmienda solo la redacción de AC-03.15, AC-03.17 y AC-03.28. "El botón de pagar permanece/queda deshabilitado" pasa a "el botón de pagar no está disponible (no se renderiza), por lo que no se puede pagar" en los estados `error` y `config-error`. Motivo: en esos estados el botón no existe (solo se renderiza en `ready`), lo que es igual o más seguro y coherente con AC-03.18 ("no existe ningún botón de pagar"); la redacción anterior no describía el comportamiento implementado.
+- **Sin cambios:** R-03.9 y AC-03.2/AC-03.10 siguen hablando de `disabled` porque aplican al estado `ready` (botón renderizado pero inhabilitado). R-03.18 y la tabla de §5 ("pago bloqueado") ya eran compatibles. IDs, estado `Aprobado` y matriz de verificación intactos.
+- (F-01.1 afecta solo a `SPEC-US-01`, R-01.6; se menciona aquí por ser la misma decisión de HITL-3.)
 
 ### v3 → Aprobado (Orquestador, 2026-11-23)
 - Cierre de HITL-1: el humano aprueba GAP-02.18/GAP-01.22 (opción A, rango [-10, +30]) y decide que el correo **no** sea rol requerido (lo controla Strapi). Estado → `Aprobado`. Sin cambios de contenido.

@@ -10,7 +10,7 @@ export const RANDOM_BYTES = new InjectionToken<RandomBytesSource>('RANDOM_BYTES'
 
 /**
  * Simulación de pago (R-03.10, R-03.11): sin red ni datos de tarjeta. Mantiene UNA sola promesa en vuelo (una segunda
- * llamada concurrente la reutiliza) y, tras `approved`, no ejecuta nada más (devuelve el mismo resultado).
+ * llamada concurrente del MISMO país la reutiliza) y, tras `approved`, no ejecuta nada más en ese país (R-03.11).
  */
 @Injectable({ providedIn: 'root' })
 export class PaymentSimulationService implements PaymentSimulationPort {
@@ -18,8 +18,9 @@ export class PaymentSimulationService implements PaymentSimulationPort {
   private readonly random = inject(RANDOM_BYTES);
   private readonly now = inject(NOW);
 
-  private inFlight: Promise<PaymentResult> | null = null;
-  private approved: PaymentResult | null = null;
+  /** Guardia por país (F-03.1, R-03.19): el estado de un país nunca se reutiliza en otro. */
+  private readonly inFlight = new Map<string, Promise<PaymentResult>>();
+  private readonly approved = new Map<string, PaymentResult>();
   private runs = 0;
 
   /** Número de simulaciones realmente ejecutadas (para las pruebas de doble envío). */
@@ -28,29 +29,38 @@ export class PaymentSimulationService implements PaymentSimulationPort {
   }
 
   pay(request: PaymentRequest): Promise<PaymentResult> {
-    if (this.approved) return Promise.resolve(this.approved);
-    if (this.inFlight) return this.inFlight;
+    const country = request.country;
+    const done = this.approved.get(country);
+    if (done) return Promise.resolve(done);
+    const pending = this.inFlight.get(country);
+    if (pending) return pending;
     this.runs += 1;
     const run = new Promise<PaymentResult>((resolve) => {
       setTimeout(() => {
         resolve(
           request.mode === 'approved'
-            ? { status: 'approved', quoteNumber: generateQuoteNumber(this.now(), this.random, request.country) }
+            ? { status: 'approved', quoteNumber: generateQuoteNumber(this.now(), this.random, country) }
             : { status: 'rejected', code: 'SIMULATED_REJECTION' },
         );
       }, this.latencyMs);
     });
-    this.inFlight = run.then((result) => {
-      this.inFlight = null;
-      if (result.status === 'approved') this.approved = result;
+    const tracked = run.then((result) => {
+      this.inFlight.delete(country);
+      if (result.status === 'approved') this.approved.set(country, result);
       return result;
     });
-    return this.inFlight;
+    this.inFlight.set(country, tracked);
+    return tracked;
   }
 
-  /** Reinicia la guardia (al iniciar una nueva cotización). */
-  reset(): void {
-    this.inFlight = null;
-    this.approved = null;
+  /** Reinicia la guardia del país (al iniciar una nueva cotización) o la de todos. */
+  reset(country?: string): void {
+    if (country === undefined) {
+      this.inFlight.clear();
+      this.approved.clear();
+      return;
+    }
+    this.inFlight.delete(country);
+    this.approved.delete(country);
   }
 }

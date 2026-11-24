@@ -81,3 +81,57 @@ describe('[R-03.11][AC-03.8] guardia de doble envío', () => {
     expect(service.executions).toBe(2);
   });
 });
+
+describe('[F-03.1][R-03.19] aislamiento del estado de pago por país', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+  const req = (country: string, mode: 'approved' | 'rejected') => ({ country, planDocumentId: 'p', finalPrice: 1, mode });
+
+  it('[F-03.1][R-03.13][R-03.19] tras aprobar en co, un pago en cl ejecuta una nueva simulación con COT-CL', async () => {
+    const service = setup();
+    const co = service.pay(req('co', 'approved'));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(await co).toMatchObject({ status: 'approved', quoteNumber: expect.stringMatching(/^COT-CO-/) });
+    const cl = service.pay(req('cl', 'approved'));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(await cl).toMatchObject({ status: 'approved', quoteNumber: expect.stringMatching(/^COT-CL-/) });
+    expect(service.executions).toBe(2);
+  });
+
+  it('[F-03.1][R-03.12] tras aprobar en co, el modo rechazado en cl rechaza y espera la latencia', async () => {
+    const service = setup();
+    const co = service.pay(req('co', 'approved'));
+    await vi.advanceTimersByTimeAsync(1000);
+    await co;
+    const cl = service.pay(req('cl', 'rejected'));
+    let settled = false;
+    void cl.then(() => (settled = true));
+    await vi.advanceTimersByTimeAsync(999);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await cl).toEqual({ status: 'rejected', code: 'SIMULATED_REJECTION' });
+  });
+
+  it('[F-03.1][R-03.11] la promesa en vuelo de un país no se comparte con otro; el mismo país sigue sin duplicar', async () => {
+    const service = setup();
+    const a = service.pay(req('co', 'approved'));
+    const b = service.pay(req('cl', 'rejected'));
+    const c = service.pay(req('co', 'approved'));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect((await b).status).toBe('rejected');
+    expect(await a).toEqual(await c);
+    expect(service.executions).toBe(2);
+  });
+
+  it('[F-03.1][R-03.15] reset(country) limpia solo ese país', async () => {
+    const service = setup();
+    const co = service.pay(req('co', 'approved'));
+    await vi.advanceTimersByTimeAsync(1000);
+    await co;
+    service.reset('co');
+    const again = service.pay(req('co', 'approved'));
+    await vi.advanceTimersByTimeAsync(1000);
+    await again;
+    expect(service.executions).toBe(2);
+  });
+});

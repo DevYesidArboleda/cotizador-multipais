@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('E2E-S resumen contra el Strapi sembrado', () => {
-  test('[R-03.2][AC-03.1][R-03.6] tres bloques en orden (tomador, vehículo, plan) y mismo precio que el Paso 2', async ({ page }) => {
+  test('@strapi [R-03.2][AC-03.1][R-03.6] tres bloques en orden (tomador, vehículo, plan) y mismo precio que el Paso 2', async ({ page }) => {
     await goToStep2(page);
     const priceStep2 = digits(await page.locator('.plan', { has: page.getByText('Plus', { exact: true }) }).locator('.plan__price-value').textContent());
     await continueToStep3(page, 'Plus');
@@ -27,18 +27,18 @@ test.describe('E2E-S resumen contra el Strapi sembrado', () => {
     expect(priceStep2).toBe('1998000');
   });
 
-  test('[R-03.1][AC-03.5] sin plan elegido, /step-3 redirige a /step-2', async ({ page }) => {
+  test('@strapi [R-03.1][AC-03.5] sin plan elegido, /step-3 redirige a /step-2', async ({ page }) => {
     await goToStep2(page);
     await page.goto('/co/quote/step-3');
     await expect(page).toHaveURL(/\/co\/quote\/step-2$/);
   });
 
-  test('[R-03.1] sin completar el Paso 1, /step-3 redirige a /step-1', async ({ page }) => {
+  test('@strapi [R-03.1] sin completar el Paso 1, /step-3 redirige a /step-1', async ({ page }) => {
     await page.goto('/co/quote/step-3');
     await expect(page).toHaveURL(/\/co\/quote\/step-1$/);
   });
 
-  test('[R-03.3][AC-03.22] valores legibles: etiqueta de la marca, fecha del país, Sí/No y "No informado"', async ({ page }) => {
+  test('@strapi [R-03.3][AC-03.22] valores legibles: etiqueta de la marca, fecha del país, Sí/No y "No informado"', async ({ page }) => {
     await openStep1(page, 'co');
     await fillCo(page, { birth: '2008-11-23', brand: 'mazda' });
     await page.getByLabel('Uso particular').check();
@@ -54,14 +54,14 @@ test.describe('E2E-S resumen contra el Strapi sembrado', () => {
     await expect(page.getByText('2008-11-23')).toHaveCount(0);
   });
 
-  test('[R-03.24][AC-03.27] el correo se ve completo en el tomador y el documento enmascarado', async ({ page }) => {
+  test('@strapi [R-03.24][AC-03.27] el correo se ve completo en el tomador y el documento enmascarado', async ({ page }) => {
     await goToStep2(page, { docNumber: '1020304050', email: 'ana.perez@example.com' });
     await continueToStep3(page, 'Plus');
     await expect(dd(page, 'Correo electrónico')).toHaveText('ana.perez@example.com');
     await expect(dd(page, 'Número de documento')).toHaveText('******4050');
   });
 
-  test('[R-03.16][AC-03.13] "Editar datos" conserva los datos; al volver el precio se recalcula y los términos están sin aceptar', async ({ page }) => {
+  test('@strapi [R-03.16][AC-03.13] "Editar datos" conserva los datos; al volver el precio se recalcula y los términos están sin aceptar', async ({ page }) => {
     await goToStep3(page, { city: 'otra', year: '2020' });
     await page.getByLabel('Acepto los términos y condiciones').check();
     const before = digits(await page.locator('.price-line .price').first().textContent());
@@ -81,7 +81,7 @@ test.describe('E2E-S resumen contra el Strapi sembrado', () => {
     await expect(payButton(page)).toBeDisabled();
   });
 
-  test('[R-03.16][AC-03.14] "Cambiar plan" lleva al Paso 2 con el plan marcado y el resumen refleja el nuevo plan', async ({ page }) => {
+  test('@strapi [R-03.16][AC-03.14] "Cambiar plan" lleva al Paso 2 con el plan marcado y el resumen refleja el nuevo plan', async ({ page }) => {
     await goToStep3(page, { city: 'otra' }, 'Plus');
     await page.getByRole('link', { name: 'Cambiar plan' }).click();
     await expect(page).toHaveURL(/step-2$/);

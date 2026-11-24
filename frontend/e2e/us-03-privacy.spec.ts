@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 const DOC = '1020304050';
 
 test.describe('[R-03.5][AC-03.6] documento enmascarado', () => {
-  test('[R-03.5][AC-03.6] el resumen muestra ******4050 y el documento completo no está en el DOM, atributos ni título', async ({ page }) => {
+  test('@strapi [R-03.5][AC-03.6] el resumen muestra ******4050 y el documento completo no está en el DOM, atributos ni título', async ({ page }) => {
     await goToStep2(page, { docNumber: DOC });
     await continueToStep3(page, 'Plus');
     await expect(page.getByText('******4050')).toBeVisible();
@@ -22,7 +22,7 @@ test.describe('[R-03.5][AC-03.6] documento enmascarado', () => {
     expect(attrs).not.toContain(DOC);
   });
 
-  test('[R-03.5] la confirmación tampoco contiene el documento ni el correo', async ({ page }) => {
+  test('@strapi [R-03.5] la confirmación tampoco contiene el documento ni el correo', async ({ page }) => {
     await goToStep2(page, { docNumber: DOC, email: 'ana.perez@example.com' });
     await continueToStep3(page, 'Plus');
     await acceptTerms(page).check();
@@ -34,7 +34,7 @@ test.describe('[R-03.5][AC-03.6] documento enmascarado', () => {
     await expect(page.getByText('******4050')).toHaveCount(0);
   });
 
-  test('[R-03.5][AC-03.27] el correo solo aparece como texto visible del Paso 3, no en title, aria-label ni data-*', async ({ page }) => {
+  test('@strapi [R-03.5][AC-03.27] el correo solo aparece como texto visible del Paso 3, no en title, aria-label ni data-*', async ({ page }) => {
     await goToStep2(page, { email: 'ana.perez@example.com' });
     await continueToStep3(page, 'Plus');
     const leaked = await page.evaluate(() =>
@@ -47,7 +47,7 @@ test.describe('[R-03.5][AC-03.6] documento enmascarado', () => {
 });
 
 test.describe('[R-03.23][AC-03.23] sin datos personales en consola', () => {
-  test('[R-03.23][AC-03.23] el flujo completo (incluido un rechazo) no escribe documento, fecha de nacimiento, nombre ni correo en consola', async ({ page }) => {
+  test('@strapi [R-03.23][AC-03.23] el flujo completo (incluido un rechazo) no escribe documento, fecha de nacimiento, nombre ni correo en consola', async ({ page }) => {
     const sink = captureConsole(page);
     await openStep1(page, 'co');
     await fillCo(page, { docNumber: DOC, name: 'Ana Pérez Demo', birth: '1990-05-10', email: 'ana.perez@example.com' });

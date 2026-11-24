@@ -3,7 +3,7 @@ import { defaultMock, mockStrapi } from './support/strapi-mock';
 import { field, fillCo, openStep1 } from './support/form-helpers';
 
 test.describe('[R-01.20][AC-01.16] aislamiento por país (Strapi sembrado)', () => {
-  test('[AC-01.16][R-01.20] los datos de Colombia no aparecen en Chile y reaparecen al volver', async ({ page }) => {
+  test('@strapi [AC-01.16][R-01.20] los datos de Colombia no aparecen en Chile y reaparecen al volver', async ({ page }) => {
     await openStep1(page, 'co');
     await fillCo(page);
     await page.waitForTimeout(150);
@@ -20,7 +20,7 @@ test.describe('[R-01.20][AC-01.16] aislamiento por país (Strapi sembrado)', () 
     await expect(field(page, 'Número de documento')).toHaveValue('12345678');
   });
 
-  test('[R-01.20] abrir /cl nunca lee ni escribe la clave auto_quote_v1_co', async ({ page }) => {
+  test('@strapi [R-01.20] abrir /cl nunca lee ni escribe la clave auto_quote_v1_co', async ({ page }) => {
     await openStep1(page, 'co');
     await fillCo(page);
     await page.waitForTimeout(150);

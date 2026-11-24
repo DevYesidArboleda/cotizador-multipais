@@ -7,50 +7,37 @@ import type { ConfigLoadResult } from '../../core/country/config-load';
 import { QuoteStore } from '../../core/quote/quote.store';
 import { PaymentSimulationService } from '../../domain/payment/payment-simulation.service';
 import { formatPrice } from '../../domain/pricing/format-price';
-import { describeConfigIssue, t } from '../../i18n/ui-copy';
-import { ErrorStateComponent, LoadingStateComponent, ConfigErrorStateComponent } from '../../shared/async-state/state-cards.component';
+import { t } from '../../i18n/ui-copy';
 
 /**
  * Confirmación (R-03.14): número, plan y precio final (nunca documento ni correo, R-03.5, R-03.24). Los datos salen de
- * `QuoteState.confirmation`, así que sobreviven a una recarga. Región `role="status"` presente desde el inicio.
+ * `QuoteState.confirmation`, así que sobreviven a una recarga. La configuración del país solo se usa para formatear el
+ * precio: si no carga, se degrada solo el precio y el número y el plan siguen visibles (F-03.5). Región `role="status"` presente desde el inicio.
  */
 @Component({
   selector: 'app-confirmation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingStateComponent, ErrorStateComponent, ConfigErrorStateComponent],
+  imports: [],
   template: `
     <section class="page">
       <h1 tabindex="-1"><span class="check" aria-hidden="true">&#10003;</span> {{ title }}</h1>
       <div role="status" class="announce">
         @if (confirmation(); as c) {
-          @if (ready()) {
-            <p class="state-card state-card--success">{{ announce(c.quoteNumber) }}</p>
-          }
+          <p class="state-card state-card--success">{{ announce(c.quoteNumber) }}</p>
         }
       </div>
       @if (confirmation(); as c) {
-        @switch (load().kind) {
-          @case ('loading') {
-            <app-loading-state [message]="loadingMessage" />
-          }
-          @case ('error') {
-            <app-error-state (retry)="retry()" />
-          }
-          @case ('config-error') {
-            <app-config-error-state [messages]="configMessages()" (retry)="retry()" />
-          }
-          @case ('ready') {
-            <div class="card">
-              <dl class="facts">
-                <div><dt>{{ numberLabel }}</dt><dd class="number">{{ c.quoteNumber }}</dd></div>
-                <div><dt>{{ planLabel }}</dt><dd>{{ c.planName }}</dd></div>
-                <div><dt>{{ priceLabel }}</dt><dd class="price">{{ priceText() }}</dd></div>
-              </dl>
-              <p class="muted">{{ note }}</p>
-              <button type="button" class="btn" (click)="newQuote()">{{ newQuoteLabel }}</button>
-            </div>
-          }
-        }
+        <div class="card">
+          <dl class="facts">
+            <div><dt>{{ numberLabel }}</dt><dd class="number">{{ c.quoteNumber }}</dd></div>
+            <div><dt>{{ planLabel }}</dt><dd>{{ c.planName }}</dd></div>
+            @if (priceText()) {
+              <div><dt>{{ priceLabel }}</dt><dd class="price">{{ priceText() }}</dd></div>
+            }
+          </dl>
+          <p class="muted">{{ note }}</p>
+          <button type="button" class="btn" (click)="newQuote()">{{ newQuoteLabel }}</button>
+        </div>
       }
     </section>
   `,
@@ -87,14 +74,6 @@ export class ConfirmationComponent {
     { initialValue: null },
   );
 
-  protected readonly load = computed<{ kind: 'loading' | 'ready' | 'error' | 'config-error' }>(() => {
-    const result = this.config();
-    if (result === null) return { kind: 'loading' };
-    if (result.kind === 'ready') return { kind: 'ready' };
-    return { kind: result.kind === 'config-error' ? 'config-error' : 'error' };
-  });
-  protected readonly ready = computed(() => this.load().kind === 'ready');
-
   protected readonly priceText = computed(() => {
     const result = this.config();
     const c = this.confirmation();
@@ -103,13 +82,7 @@ export class ConfirmationComponent {
     return formatted.kind === 'ok' ? formatted.text : '';
   });
 
-  protected readonly configMessages = computed(() => {
-    const result = this.config();
-    return result?.kind === 'config-error' ? result.issues.map(describeConfigIssue) : [];
-  });
-
   protected readonly title = t('confirmation.title');
-  protected readonly loadingMessage = t('loading.generic');
   protected readonly numberLabel = t('confirmation.number.label');
   protected readonly planLabel = t('confirmation.plan.label');
   protected readonly priceLabel = t('confirmation.price.label');
@@ -120,13 +93,9 @@ export class ConfirmationComponent {
     return t('confirmation.announce', { numero });
   }
 
-  protected retry(): void {
-    this.attempt.update((n) => n + 1);
-  }
-
   /** "Nueva cotización": borra solo la clave del país actual y vuelve al Paso 1 vacío (R-03.15). */
   protected newQuote(): void {
-    this.payment.reset();
+    this.payment.reset(this.country());
     this.quote.reset();
     void this.router.navigate(['/', this.country(), 'quote', 'step-1']);
   }

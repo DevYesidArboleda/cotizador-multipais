@@ -17,14 +17,14 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     await page.clock.setFixedTime(FIXED_NOW);
   });
 
-  test('[R-02.1][R-02.3][AC-02.1] solo los planes activos de Colombia, en el orden de Strapi, sin el inactivo', async ({ page }) => {
+  test('@strapi [R-02.1][R-02.3][AC-02.1] solo los planes activos de Colombia, en el orden de Strapi, sin el inactivo', async ({ page }) => {
     await goToStep2(page);
     const names = await namesOf(page);
     expect(names).toEqual(['Básico', 'Plus', 'Premium']);
     await expect(page.getByText('Legado')).toHaveCount(0);
   });
 
-  test('[R-02.10][AC-02.2] solo el plan recomendado muestra "Recomendado" y un borde distintivo, sin preselección', async ({ page }) => {
+  test('@strapi [R-02.10][AC-02.2] solo el plan recomendado muestra "Recomendado" y un borde distintivo, sin preselección', async ({ page }) => {
     await goToStep2(page);
     await expect(page.getByText('Recomendado', { exact: true })).toHaveCount(1);
     await expect(page.locator('.plan--highlighted .plan__name')).toHaveText('Plus');
@@ -33,7 +33,7 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     await expect(continueButton(page)).toBeDisabled();
   });
 
-  test('[R-02.11][AC-02.3] la selección es única, se marca "Elegido" y habilita continuar', async ({ page }) => {
+  test('@strapi [R-02.11][AC-02.3] la selección es única, se marca "Elegido" y habilita continuar', async ({ page }) => {
     await goToStep2(page);
     await choosePlan(page, 'Básico');
     await expect(planRadio(page, 'Básico')).toBeChecked();
@@ -47,12 +47,12 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     await expect(page).toHaveURL(/\/co\/quote\/step-3$/);
   });
 
-  test('[R-02.1][AC-02.5] sin completar el Paso 1, el acceso directo redirige a step-1', async ({ page }) => {
+  test('@strapi [R-02.1][AC-02.5] sin completar el Paso 1, el acceso directo redirige a step-1', async ({ page }) => {
     await page.goto('/co/quote/step-2');
     await expect(page).toHaveURL(/\/co\/quote\/step-1$/);
   });
 
-  test('[R-02.5][AC-02.7][R-02.23][AC-02.23] precios en COP con formato es-CO, sin decimales (Bogotá +8)', async ({ page }) => {
+  test('@strapi [R-02.5][AC-02.7][R-02.23][AC-02.23] precios en COP con formato es-CO, sin decimales (Bogotá +8)', async ({ page }) => {
     await goToStep2(page);
     expect(digits(await priceOf(page, 'Básico').textContent())).toBe('1296000');
     expect(digits(await priceOf(page, 'Plus').textContent())).toBe('1998000');
@@ -61,14 +61,14 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     await expect(priceOf(page, 'Plus')).toHaveCSS('font-variant-numeric', /tabular-nums/);
   });
 
-  test('[R-02.23][AC-02.23] "Otra ciudad" no tiene ajuste: el precio final es el base y no hay error', async ({ page }) => {
+  test('@strapi [R-02.23][AC-02.23] "Otra ciudad" no tiene ajuste: el precio final es el base y no hay error', async ({ page }) => {
     await goToStep2(page, { city: 'otra' });
     expect(digits(await priceOf(page, 'Plus').textContent())).toBe('1850000');
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.getByText('Precio base')).toHaveCount(0);
   });
 
-  test('[R-02.14][AC-02.20] cada plan muestra descripción, coberturas con límite y beneficios', async ({ page }) => {
+  test('@strapi [R-02.14][AC-02.20] cada plan muestra descripción, coberturas con límite y beneficios', async ({ page }) => {
     await goToStep2(page);
     const plus = page.locator('.plan', { has: page.getByText('Plus', { exact: true }) });
     await expect(plus).toContainText('El equilibrio entre cobertura y precio.');
@@ -79,7 +79,7 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     expect(items).toEqual(['Responsabilidad civil', 'Pérdida parcial por daños', 'Asistencia en carretera']);
   });
 
-  test('[R-02.9][R-02.17][AC-02.8][AC-02.25] cambiar año y ciudad en el Paso 1 recalcula los precios y el plan sigue elegido', async ({ page }) => {
+  test('@strapi [R-02.9][R-02.17][AC-02.8][AC-02.25] cambiar año y ciudad en el Paso 1 recalcula los precios y el plan sigue elegido', async ({ page }) => {
     await goToStep2(page, { year: '2025' });
     await choosePlan(page, 'Plus');
     expect(digits(await priceOf(page, 'Plus').textContent())).toBe('2183000');
@@ -96,7 +96,7 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     await expect(page.getByRole('status').filter({ hasText: 'cambió' })).toHaveCount(1);
   });
 
-  test('[R-02.12][AC-02.14] al recargar los planes se piden de nuevo y el plan sigue marcado', async ({ page }) => {
+  test('@strapi [R-02.12][AC-02.14] al recargar los planes se piden de nuevo y el plan sigue marcado', async ({ page }) => {
     await goToStep2(page);
     await choosePlan(page, 'Premium');
     const request = page.waitForRequest((r) => r.url().includes('/api/insurance-plans'));
@@ -105,7 +105,7 @@ test.describe('E2E-S contra el Strapi sembrado (solo lectura)', () => {
     await expect(planRadio(page, 'Premium')).toBeChecked();
   });
 
-  test('[R-02.5][AC-02.18] Chile se muestra en CLP con formato es-CL (Punta Arenas -5)', async ({ page }) => {
+  test('@strapi [R-02.5][AC-02.18] Chile se muestra en CLP con formato es-CL (Punta Arenas -5)', async ({ page }) => {
     await openStep1(page, 'cl');
     await fillCl(page, { city: 'punta-arenas' });
     await submit(page);
@@ -225,7 +225,7 @@ async function fillCoWithoutCity(page: Page): Promise<void> {
 }
 
 test.describe('[R-02.17] Volver conserva los datos', () => {
-  test('[R-02.17] "Volver" navega al Paso 1 sin perder lo escrito', async ({ page }) => {
+  test('@strapi [R-02.17] "Volver" navega al Paso 1 sin perder lo escrito', async ({ page }) => {
     await goToStep2(page);
     await page.getByRole('link', { name: 'Volver' }).click();
     await expect(page).toHaveURL(/\/co\/quote\/step-1$/);

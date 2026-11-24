@@ -38,11 +38,12 @@ import type { Step2Source } from './step-2-state';
                 <p class="state-card">{{ text }}</p>
               }
             </div>
+            <p class="back-top"><a [routerLink]="['/', country(), 'quote', 'step-1']">{{ back }}</a></p>
             <fieldset class="plans">
               <legend class="plans__legend">{{ legend() }}</legend>
               @for (item of v.plans; track item.plan.documentId) {
                 <div class="plan" [class.plan--highlighted]="item.highlighted" [class.plan--selected]="item.plan.documentId === v.selectedPlanDocumentId">
-                  <label class="plan__head" [for]="'plan-' + item.plan.documentId">
+                  <div class="plan__head">
                     <input
                       type="radio"
                       name="plan"
@@ -53,14 +54,14 @@ import type { Step2Source } from './step-2-state';
                       [attr.aria-describedby]="describedBy(item)"
                       (change)="select(item)"
                     />
-                    <span class="plan__name">{{ item.plan.name }}</span>
+                    <label class="plan__name" [for]="'plan-' + item.plan.documentId">{{ item.plan.name }}</label>
                     @if (item.highlighted) {
                       <span class="plan__badge" [id]="'plan-badge-' + item.plan.documentId">{{ recommendedLabel }}</span>
                     }
                     @if (item.plan.documentId === v.selectedPlanDocumentId) {
-                      <span class="plan__badge plan__badge--selected">{{ selectedLabel }}</span>
+                      <span class="plan__badge plan__badge--selected" aria-hidden="true">{{ selectedLabel }}</span>
                     }
-                  </label>
+                  </div>
                   @if (item.plan.shortDescription) {
                     <p class="plan__desc">{{ item.plan.shortDescription }}</p>
                   }
@@ -103,7 +104,6 @@ import type { Step2Source } from './step-2-state';
               <p id="plans-help" class="help">{{ helpText }}</p>
             }
             <div class="actions">
-              <a class="btn btn--secondary" [routerLink]="['/', country(), 'quote', 'step-1']">{{ back }}</a>
               <button
                 type="button"
                 class="btn"
@@ -151,7 +151,10 @@ import type { Step2Source } from './step-2-state';
     .plan__list { margin: 0; padding-left: var(--space-5); }
     .plan__item-meta { display: block; color: var(--color-text-muted); }
     .help { color: var(--color-text-muted); margin: 0 0 var(--space-3); }
-    .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between; }
+    .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end; }
+    .back-top { margin: 0 0 var(--space-3); }
+    .back-top a { display: inline-flex; align-items: center; min-height: var(--size-target-min); }
+    .plan__name { cursor: pointer; }
     .notices:empty, .notices { margin: 0; }
   `,
 })
@@ -175,7 +178,8 @@ export class Step2Component {
       switchMap(({ code, attempt }) => {
         const force = attempt !== this.lastAttempt;
         this.lastAttempt = attempt;
-        this.unavailable.set(false);
+        // F-02.3: el aviso que dejó el guard (plan retirado visto desde el Paso 3) se muestra aunque aún no haya selección.
+        this.unavailable.set(this.quote.consumePendingNotice() === 'plan-unavailable');
         return this.store.loadConfig(code, force).pipe(
           switchMap((result) => {
             if (result.kind === 'not-found') {

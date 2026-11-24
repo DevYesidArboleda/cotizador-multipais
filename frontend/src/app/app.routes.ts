@@ -36,8 +36,11 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/confirmation/confirmation.component').then((m) => m.ConfirmationComponent),
           },
+          // F-01.3: paso desconocido con país válido -> Paso 1 (no un falso "país no encontrado").
+          { path: '**', redirectTo: 'step-1' },
         ],
       },
+      { path: '**', redirectTo: 'quote/step-1' },
     ],
   },
   { path: '**', redirectTo: 'country-not-found' },
