@@ -9,7 +9,7 @@ RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build -- --configuration production
 
-FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 ARG APP_NAME=frontend
 ENV PORT=8080 \
     STRAPI_UPSTREAM=http://strapi:1337
