@@ -23,7 +23,7 @@ jobs:
       backend: ${{ steps.d.outputs.backend }}
       e2e: ${{ steps.d.outputs.e2e }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: d
         # Mientras el flujo SDD avanza, frontend/ y backend/ aún pueden no existir: sus jobs se omiten sin fallar.
         run: |
@@ -38,10 +38,10 @@ jobs:
     name: Gobierno (trazabilidad + secretos)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Lint de workflows (actionlint, imagen oficial con shellcheck)
@@ -54,7 +54,7 @@ jobs:
       - name: Autoprueba del smoke de seguridad (servidor simulado, detecta fallos)
         run: node scripts/security-smoke.selftest.mjs
       - name: Escaneo de secretos (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Ningún token de Strapi en el frontend
@@ -72,8 +72,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -97,8 +97,8 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -115,8 +115,8 @@ jobs:
     if: needs.detect.outputs.e2e == 'true'
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -138,7 +138,7 @@ jobs:
           npx playwright test --fail-on-flaky-tests
         env:
           E2E_BASE_URL: http://localhost:4200
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -163,8 +163,8 @@ jobs:
       # Override con servicio postgres; mismas imágenes, solo cambian variables (12-factor).
       COMPOSE_FILE: docker-compose.yml:docker-compose.postgres.yml
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -191,7 +191,7 @@ jobs:
           npx playwright test --grep @strapi --fail-on-flaky-tests
         env:
           E2E_BASE_URL: http://localhost:4200
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-postgres
@@ -215,9 +215,9 @@ jobs:
       matrix:
         service: [frontend, backend]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.service }}
           load: true
