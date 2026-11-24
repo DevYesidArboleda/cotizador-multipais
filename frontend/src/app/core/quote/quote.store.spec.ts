@@ -91,3 +91,36 @@ describe('[R-01.10] campos pendientes de marcar tras la redirección de un guard
     expect(store.consumePendingTouch()).toEqual([]);
   });
 });
+
+describe('[R-02.11][R-02.16][R-02.17] selección de plan en el QuoteState', () => {
+  it('[R-02.11][R-02.17] la selección se guarda junto al Paso 1 en la clave del país', () => {
+    const { storage, store } = setup();
+    store.activate('co');
+    store.setStep1Values({ 'doc-a': 'x' });
+    store.setSelectedPlan({ planDocumentId: 'p1', priceSeenAtSelection: 100 });
+    TestBed.tick();
+    expect(JSON.parse(storage.data.get('auto_quote_v1_co') ?? '{}')).toEqual({
+      schemaVersion: 1, step1: { 'doc-a': 'x' }, selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 100 },
+    });
+  });
+
+  it('[R-02.12] limpiar la selección conserva el Paso 1', () => {
+    const { store } = setup();
+    store.activate('co');
+    store.setStep1Values({ 'doc-a': 'x' });
+    store.setSelectedPlan({ planDocumentId: 'p1', priceSeenAtSelection: 100 });
+    store.clearSelectedPlan();
+    expect(store.state().selectedPlan).toBeUndefined();
+    expect(store.state().step1).toEqual({ 'doc-a': 'x' });
+  });
+
+  it('[R-02.16] la selección de un país no se ve en el otro', () => {
+    const { storage, store } = setup();
+    store.activate('co');
+    store.setSelectedPlan({ planDocumentId: 'p1', priceSeenAtSelection: 100 });
+    TestBed.tick();
+    store.activate('cl');
+    expect(store.state().selectedPlan).toBeUndefined();
+    expect(storage.data.has('auto_quote_v1_cl')).toBe(false);
+  });
+});

@@ -62,3 +62,54 @@ export async function fillCo(page: Page, overrides: CoValues = {}): Promise<void
 export async function submit(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Continuar' }).click();
 }
+
+export interface ClValues {
+  name?: string;
+  rut?: string;
+  birth?: string;
+  email?: string;
+  city?: string;
+  plate?: string;
+  brand?: string;
+  year?: string;
+}
+
+const CL_DEFAULTS: Required<ClValues> = {
+  name: 'Ana Pérez Demo', rut: '12.345.678-5', birth: '1990-05-10', email: 'ana.perez@example.com',
+  city: 'santiago', plate: 'BCDF12', brand: 'mazda', year: '2020',
+};
+
+/** Completa el formulario de Chile (seed o mock) con datos ficticios válidos. */
+export async function fillCl(page: Page, overrides: ClValues = {}): Promise<void> {
+  const v = { ...CL_DEFAULTS, ...overrides };
+  await field(page, 'Nombre completo').fill(v.name);
+  await field(page, 'RUT').fill(v.rut);
+  await field(page, 'Fecha de nacimiento').fill(v.birth);
+  await field(page, 'Correo electrónico').fill(v.email);
+  await field(page, 'Ciudad').selectOption(v.city);
+  await field(page, 'Patente').fill(v.plate);
+  await field(page, 'Marca').selectOption(v.brand);
+  await field(page, 'Año del vehículo').fill(v.year);
+  await page.getByLabel(/^Autorizo el tratamiento/).check();
+}
+
+/** Completa el Paso 1 de Colombia y llega al Paso 2. */
+export async function goToStep2(page: Page, overrides: CoValues = {}): Promise<void> {
+  await openStep1(page, 'co');
+  await fillCo(page, overrides);
+  await submit(page);
+  await expect(page).toHaveURL(/\/co\/quote\/step-2$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Elige tu plan' })).toBeVisible();
+}
+
+export const planRadio = (page: Page, name: string): Locator => page.getByRole('radio', { name: new RegExp(`^${name}`) });
+export const continueButton = (page: Page): Locator => page.getByRole('button', { name: 'Continuar al resumen' });
+
+/** Elige un plan y espera a que la selección esté persistida en sessionStorage (el guardado es asíncrono). */
+export async function choosePlan(page: Page, name: string, country = 'co'): Promise<void> {
+  await planRadio(page, name).check();
+  await expect(page.getByText('Elegido', { exact: true })).toHaveCount(1);
+  await expect
+    .poll(() => page.evaluate((key) => sessionStorage.getItem(key) ?? '', `auto_quote_v1_${country}`))
+    .toContain('selectedPlan');
+}

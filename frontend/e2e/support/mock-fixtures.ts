@@ -117,3 +117,55 @@ export function mockClFields(): MockField[] {
       return f;
     });
 }
+
+export interface MockPlan {
+  id: number;
+  documentId: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  basePrice: number;
+  /** Se tipa `string | undefined` para simular moneda ausente o fuera del enum. */
+  currency?: string;
+  order: number;
+  isRecommended: boolean;
+  isActive: boolean;
+  coverages: { name: string; description?: string; limit?: string }[];
+  benefits: { text: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+let planSeq = 0;
+export function mockPlan(partial: Partial<MockPlan> & Pick<MockPlan, 'slug' | 'name' | 'basePrice'>): MockPlan {
+  planSeq += 1;
+  return {
+    id: planSeq,
+    documentId: `mock-plan-${partial.slug}`,
+    shortDescription: `Descripción de ${partial.name}`,
+    currency: 'COP',
+    order: planSeq * 10,
+    isRecommended: false,
+    isActive: true,
+    coverages: [{ name: `Cobertura de ${partial.name}`, description: 'Detalle ficticio.', limit: 'Hasta 100 unidades' }],
+    benefits: [{ text: `Beneficio de ${partial.name}` }],
+    createdAt: `2026-01-01T00:00:${String(planSeq % 60).padStart(2, '0')}.000Z`,
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    ...partial,
+  };
+}
+
+export function mockCoPlans(): MockPlan[] {
+  return [
+    mockPlan({ slug: 'basico', name: 'Básico', basePrice: 1_200_000 }),
+    mockPlan({ slug: 'plus', name: 'Plus', basePrice: 1_850_000, isRecommended: true }),
+    mockPlan({ slug: 'premium', name: 'Premium', basePrice: 2_600_000 }),
+  ];
+}
+
+export function mockClPlans(): MockPlan[] {
+  return [
+    mockPlan({ slug: 'basico-cl', name: 'Básico', basePrice: 250_000, currency: 'CLP' }),
+    mockPlan({ slug: 'plus-cl', name: 'Plus', basePrice: 380_000, currency: 'CLP', isRecommended: true }),
+  ];
+}

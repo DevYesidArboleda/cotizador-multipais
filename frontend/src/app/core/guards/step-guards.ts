@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
 import type { CanActivateFn, UrlTree } from '@angular/router';
 import { PRIMARY_OUTLET, Router, UrlSegment } from '@angular/router';
-import { map } from 'rxjs';
+import { map, of, switchMap } from 'rxjs';
+import type { Observable } from 'rxjs';
 import { decideCountrySegment } from '../../domain/country/country-resolver';
 import { validateStep1 } from '../../domain/form/validate-step1';
 import { NOW } from '../clock';
@@ -39,20 +40,31 @@ function stepGuard(target: Exclude<QuoteStep, 'step-1'>): CanActivateFn {
     const code = route.paramMap.get('country') ?? '';
     quote.activate(code);
     const redirect = (to: QuoteStep): UrlTree => router.createUrlTree(['/', code, 'quote', to]);
-    return countryStore.loadConfig(code).pipe(
-      map((result) => {
-        if (result.kind === 'not-found') return router.createUrlTree(['/country-not-found']);
+    // R-02.24: la configuración de campos se refetchea al entrar al Paso 2 (incluida la recarga).
+    return countryStore.loadConfig(code, target === 'step-2').pipe(
+      switchMap((result): Observable<boolean | UrlTree> => {
+        if (result.kind === 'not-found') return of(router.createUrlTree(['/country-not-found']));
         // Error de red, vacío o config-error: el Paso 1 es quien presenta ese estado (con "Reintentar").
-        if (result.kind !== 'ready') return redirect('step-1');
+        if (result.kind !== 'ready') return of(redirect('step-1'));
         const state = quote.state();
-        const decision = decideStepAccess(target, {
-          state,
-          step1Errors: validateStep1(result.config, state.step1, now()),
-          activePlanDocumentIds: null,
-        });
-        if (decision.kind === 'allow') return true;
-        quote.setPendingTouch(decision.touchFieldDocumentIds);
-        return redirect(decision.to);
+        const step1Errors = validateStep1(result.config, state.step1, now());
+        const decide = (activePlanDocumentIds: ReadonlySet<string> | null): boolean | UrlTree => {
+          const decision = decideStepAccess(target, { state, step1Errors, activePlanDocumentIds });
+          if (decision.kind === 'allow') return true;
+          quote.setPendingTouch(decision.touchFieldDocumentIds);
+          return redirect(decision.to);
+        };
+        const needsPlans = target !== 'step-2' && step1Errors.length === 0 && state.selectedPlan !== undefined && !state.confirmation;
+        if (!needsPlans) return of(decide(null));
+        // R-02.12: planes siempre frescos antes de entrar al Paso 3.
+        return countryStore.loadPlans(result.config.country).pipe(
+          map((plans) => {
+            if (plans.kind === 'ok') return decide(new Set(plans.plans.map((p) => p.documentId)));
+            if (plans.kind === 'empty') return decide(new Set<string>());
+            if (plans.kind === 'config-error') return redirect('step-2');
+            return decide(null);
+          }),
+        );
       }),
     );
   };

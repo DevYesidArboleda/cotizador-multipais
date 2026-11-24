@@ -36,3 +36,16 @@ describe('[R-01.27] catálogo de copy ui-copy.es', () => {
     }
   });
 });
+
+describe('[R-02.20] catálogo del Paso 2', () => {
+  it('[R-02.20] contiene los textos de planes, avisos y estados del Paso 2', () => {
+    for (const key of ['plans.group.legend', 'plan.recommended', 'plan.selected', 'notice.price.changed', 'notice.plan.unavailable', 'empty.step2.title', 'button.continueToSummary', 'plans.select.help'] as const) {
+      expect(t(key).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('[R-02.20] interpola precio y país; los config-error de plan salen del catálogo', () => {
+    expect(t('notice.price.changed', { precio: '$ 1' })).toBe('El precio de tu plan cambió. Ahora es $ 1.');
+    expect(describeConfigIssue({ code: 'plan-currency-mismatch', planDocumentId: 'd', planName: 'P', planCurrency: 'CLP', countryCurrency: 'COP' })).toContain('CLP');
+  });
+});

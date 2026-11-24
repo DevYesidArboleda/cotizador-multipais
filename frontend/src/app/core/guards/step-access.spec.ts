@@ -34,3 +34,21 @@ describe('[R-01.10] guard de acceso a los pasos', () => {
     expect(decideStepAccess('step-3', context())).toMatchObject({ kind: 'redirect', to: 'step-2' });
   });
 });
+
+describe('[R-02.1][R-02.12] acceso al Paso 3 con planes activos', () => {
+  const state = { ...emptyQuoteState(), selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 10 } };
+
+  it('[R-02.1] sin plan elegido el Paso 3 redirige al Paso 2', () => {
+    expect(decideStepAccess('step-3', context())).toMatchObject({ kind: 'redirect', to: 'step-2' });
+  });
+
+  it('[R-02.12] plan elegido ausente de los activos: redirige al Paso 2 con aviso plan-unavailable', () => {
+    expect(decideStepAccess('step-3', context({ state, activePlanDocumentIds: new Set(['otro']) }))).toEqual({
+      kind: 'redirect', to: 'step-2', touchFieldDocumentIds: [], notice: 'plan-unavailable',
+    });
+  });
+
+  it('[R-02.12] plan elegido vigente: el Paso 3 permite la entrada', () => {
+    expect(decideStepAccess('step-3', context({ state, activePlanDocumentIds: new Set(['p1']) }))).toEqual({ kind: 'allow' });
+  });
+});

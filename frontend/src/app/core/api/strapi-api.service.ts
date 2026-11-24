@@ -26,6 +26,10 @@ export class StrapiApiService {
     return this.get(buildStrapiUrl('formFields', code));
   }
 
+  insurancePlans(code: string): Observable<unknown> {
+    return this.get(buildStrapiUrl('insurancePlans', code));
+  }
+
   private get(url: string): Observable<unknown> {
     return this.http.get<unknown>(url).pipe(timeout(HTTP_TIMEOUT_MS));
   }

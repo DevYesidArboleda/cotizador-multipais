@@ -4,7 +4,10 @@ import { catchError, defer, forkJoin, map, of, tap } from 'rxjs';
 import { StrapiApiService } from '../api/strapi-api.service';
 import type { CountryLink } from '../contracts/strapi-contracts';
 import { toCountryLinks } from '../http/mappers';
+import type { CountryConfig } from '../contracts/strapi-contracts';
 import type { ConfigLoadResult } from './config-load';
+import type { PlansLoadResult } from './plans-load';
+import { resolvePlansLoad } from './plans-load';
 import { resolveConfigLoad } from './config-load';
 
 export type CountryListState =
@@ -67,5 +70,13 @@ export class CountryStore {
         }),
       );
     });
+  }
+
+  /** Planes SIEMPRE frescos (sin caché): se piden en cada entrada al Paso 2 y en los guards del Paso 3 (R-02.12). */
+  loadPlans(country: CountryConfig): Observable<PlansLoadResult> {
+    return this.api.insurancePlans(country.code).pipe(
+      map((raw) => resolvePlansLoad(raw, country)),
+      catchError(() => of<PlansLoadResult>({ kind: 'error' })),
+    );
   }
 }

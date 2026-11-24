@@ -12,6 +12,7 @@ import type {
   FormConfigResult,
   FormFieldConfig,
   FormFieldOption,
+  InsurancePlan,
   JsonScalar,
   StrapiFieldOptionDto,
   StrapiFieldValidationDto,
@@ -24,6 +25,7 @@ import {
   isStrapiCountryDto,
   isStrapiCountryListItemDto,
   isStrapiFormFieldDto,
+  isStrapiInsurancePlanDto,
   isStrapiListResponse,
 } from './type-guards';
 
@@ -139,6 +141,10 @@ function warnIgnoredValidators(dto: StrapiFormFieldDto, validation: FieldValidat
 function mapField(dto: StrapiFormFieldDto, issues: ConfigIssue[]): FormFieldConfig {
   const validation = mapValidation(dto, issues);
   warnIgnoredValidators(dto, validation);
+  // R-02.21: un factor de precio en un campo que no es `city` se ignora con aviso (sin datos personales).
+  if (dto.semanticRole !== 'city' && (dto.options ?? []).some((o) => o.priceAdjustmentPct !== undefined && o.priceAdjustmentPct !== null)) {
+    console.warn(`[form-config] priceAdjustmentPct ignorado fuera del rol city en el campo ${dto.documentId}`);
+  }
   return {
     documentId: dto.documentId,
     key: dto.key,
@@ -176,4 +182,32 @@ export function buildFormConfig(country: CountryConfig, raw: unknown): FormConfi
   if (resolved.kind === 'config-error') issues.push(...resolved.issues);
   if (issues.length > 0 || resolved.kind !== 'ok') return { kind: 'config-error', issues };
   return { kind: 'ready', config: { country, fields, roles: resolved.roles } };
+}
+
+/** Planes crudos → dominio; `total > 100` o forma inválida → `config-error` (R-02.2). */
+export function toInsurancePlans(
+  raw: unknown,
+): { kind: 'ok'; plans: readonly InsurancePlan[] } | { kind: 'config-error'; issues: readonly ConfigIssue[] } {
+  const malformed = { kind: 'config-error', issues: [{ code: 'malformed-response', resource: 'insurancePlans' }] } as const;
+  if (!isStrapiListResponse(raw)) return malformed;
+  const total = raw.meta.pagination.total;
+  if (total > STRAPI_MAX_PAGE_SIZE || raw.data.length > STRAPI_MAX_PAGE_SIZE) {
+    return { kind: 'config-error', issues: [{ code: 'too-many-results', resource: 'insurancePlans', total }] };
+  }
+  if (!raw.data.every(isStrapiInsurancePlanDto)) return malformed;
+  const plans: InsurancePlan[] = raw.data.map((dto) => ({
+    documentId: dto.documentId,
+    slug: dto.slug,
+    name: dto.name ?? null,
+    shortDescription: dto.shortDescription ?? null,
+    basePrice: dto.basePrice,
+    declaredCurrency: dto.currency ?? null,
+    coverages: (dto.coverages ?? []).map((c) => ({ name: c.name, description: c.description ?? null, limit: c.limit ?? null })),
+    benefits: (dto.benefits ?? []).map((b) => ({ text: b.text })),
+    order: dto.order,
+    isRecommended: dto.isRecommended === true,
+    isActive: dto.isActive === true,
+    createdAt: dto.createdAt,
+  }));
+  return { kind: 'ok', plans };
 }

@@ -1,5 +1,5 @@
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
-import type { QuoteState, Step1Values } from '../contracts/strapi-contracts';
+import type { QuoteState, SelectedPlan, Step1Values } from '../contracts/strapi-contracts';
 import { emptyQuoteState, readQuoteState, SESSION_STORAGE, writeQuoteState } from '../storage/quote-storage';
 
 interface Slot {
@@ -42,6 +42,20 @@ export class QuoteStore {
   /** Guarda los valores del Paso 1 indexados por `documentId` (R-01.8, R-01.9). */
   setStep1Values(values: Step1Values): void {
     this.slot.update((s) => ({ ...s, state: { ...s.state, step1: values }, persist: true }));
+  }
+
+  /** Guarda la selección única de plan en el mismo `QuoteState` (R-02.11, R-02.17). */
+  setSelectedPlan(plan: SelectedPlan): void {
+    this.slot.update((s) => ({ ...s, state: { ...s.state, selectedPlan: plan }, persist: true }));
+  }
+
+  /** Limpia la selección (plan que ya no existe, R-02.12). */
+  clearSelectedPlan(): void {
+    this.slot.update((s) => {
+      const next: QuoteState = { ...s.state };
+      delete next.selectedPlan;
+      return { ...s, state: next, persist: true };
+    });
   }
 
   setPendingTouch(ids: readonly string[]): void {

@@ -78,3 +78,15 @@ describe('[R-01.24] almacenamiento ilegible', () => {
     expect(readQuoteState(storage, 'co')).toEqual(emptyQuoteState());
   });
 });
+
+describe('[R-02.16][R-02.17] selección de plan en el almacenamiento por país', () => {
+  it('[R-02.17] la selección vive en el mismo QuoteState que el Paso 1 y hace ida y vuelta', () => {
+    const raw = JSON.stringify({ schemaVersion: 1, step1: { a: 'x' }, selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 5 } });
+    expect(parseQuoteState(raw)).toEqual({ schemaVersion: 1, step1: { a: 'x' }, selectedPlan: { planDocumentId: 'p1', priceSeenAtSelection: 5 } });
+  });
+
+  it('[R-02.16] una selección malformada se descarta sin tocar el Paso 1', () => {
+    const raw = JSON.stringify({ schemaVersion: 1, step1: { a: 'x' }, selectedPlan: { planDocumentId: 3 } });
+    expect(parseQuoteState(raw)).toEqual({ schemaVersion: 1, step1: { a: 'x' } });
+  });
+});

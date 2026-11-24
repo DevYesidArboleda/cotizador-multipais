@@ -107,12 +107,21 @@ export function isStrapiFormFieldDto(value: unknown): value is StrapiFormFieldDt
   );
 }
 
+function isListOf(value: unknown, itemGuard: (v: unknown) => boolean): boolean {
+  return value === undefined || value === null || (Array.isArray(value) && value.every(itemGuard));
+}
+
 export function isStrapiInsurancePlanDto(value: unknown): value is StrapiInsurancePlanDto {
   return (
     isRecord(value) &&
     hasDocumentIdentity(value) &&
     typeof value['slug'] === 'string' &&
     typeof value['order'] === 'number' &&
-    'basePrice' in value
+    'basePrice' in value &&
+    isOptionalString(value['name']) &&
+    isOptionalString(value['shortDescription']) &&
+    isOptionalString(value['currency']) &&
+    isListOf(value['coverages'], (c) => isRecord(c) && typeof c['name'] === 'string' && isOptionalString(c['description']) && isOptionalString(c['limit'])) &&
+    isListOf(value['benefits'], (b) => isRecord(b) && typeof b['text'] === 'string')
   );
 }

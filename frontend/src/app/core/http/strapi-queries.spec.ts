@@ -25,3 +25,14 @@ describe('[R-01.23] consultas a Strapi', () => {
     expect(buildStrapiUrl('country', 'co&populate=*')).toBe('/api/countries?filters[code][$eq]=co%26populate%3D*');
   });
 });
+
+describe('[R-02.2] consulta de planes', () => {
+  it('[R-02.2] la consulta de planes es exactamente la de la spec y relativa', () => {
+    const url = buildStrapiUrl('insurancePlans', 'co');
+    expect(url).toBe(
+      '/api/insurance-plans?filters[country][code][$eq]=co&filters[isActive][$eq]=true&status=published&populate[coverages]=true&populate[benefits]=true&sort[0]=order:asc&sort[1]=createdAt:asc&pagination[pageSize]=100',
+    );
+    expect(isAllowedApiUrl(url)).toBe(true);
+    expect(url).not.toMatch(/populate=\*|https?:|Bearer/);
+  });
+});
