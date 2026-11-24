@@ -3,6 +3,8 @@
 Una sola aplicación **Angular 22** (un solo build) que cotiza seguros de autos para Colombia y Chile, con formulario, planes, coberturas, precios y términos **100 % configurables desde Strapi 5**, construida con un flujo agéntico **Spec-Driven Development** con puntos de control humanos (ver [`FLOW.md`](./FLOW.md)) y con **CI/CD** hacia una capa gratuita (Render + Neon).
 
 > Marca ficticia: **Linde Auto**. Todos los datos son ficticios.
+>
+> **Demo pública:** https://cotizador-frontend-8qqo.onrender.com/co/quote/step-1 · https://cotizador-frontend-8qqo.onrender.com/cl/quote/step-1 (Render Free: el primer acceso tras 15 min sin uso tarda ~1 min; si aparece "Reintentar", púlsalo).
 
 ## Arranque en un solo comando
 
